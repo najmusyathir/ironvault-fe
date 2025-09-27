@@ -35,6 +35,8 @@ export interface User {
   nickname?: string;
   nric?: string;
   birth_date?: string;
+  role: string;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -4,8 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
+import { getUser } from "../lib/api";
+import { User } from "../types/auth";
 import {
   GridIcon,
+  GroupIcon,
   PlugInIcon,
   ChevronDownIcon,
   HorizontaLDots,
@@ -18,13 +21,26 @@ type NavItem = {
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
-const navItems: NavItem[] = [
-  {
-    icon: <GridIcon />,
-    name: "Dashboard",
-    path: "/",
-  },
-];
+const getNavItems = (userRole?: string): NavItem[] => {
+  const items: NavItem[] = [
+    {
+      icon: <GridIcon />,
+      name: "Dashboard",
+      path: "/",
+    },
+  ];
+
+  // Only show Users menu for superadmin
+  if (userRole === "superadmin") {
+    items.push({
+      icon: <GroupIcon />,
+      name: "Users",
+      path: "/users",
+    });
+  }
+
+  return items;
+};
 
 const othersItems: NavItem[] = [
   {
@@ -40,6 +56,12 @@ const othersItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const user = getUser();
+    setCurrentUser(user);
+  }, []);
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -183,7 +205,7 @@ const AppSidebar: React.FC = () => {
     // Check if the current path matches any submenu item
     let submenuMatched = false;
     ["main", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? navItems : othersItems;
+      const items = menuType === "main" ? getNavItems(currentUser?.role) : othersItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
@@ -203,7 +225,7 @@ const AppSidebar: React.FC = () => {
     if (!submenuMatched) {
       setOpenSubmenu(null);
     }
-  }, [pathname,isActive]);
+  }, [pathname,isActive, currentUser?.role]);
 
   useEffect(() => {
     // Set the height of the submenu items when the submenu is opened
@@ -296,7 +318,7 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(navItems, "main")}
+              {renderMenuItems(getNavItems(currentUser?.role), "main")}
             </div>
 
             <div className="">

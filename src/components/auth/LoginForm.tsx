@@ -50,7 +50,7 @@ export default function LoginForm() {
     const errors: Partial<Record<keyof LoginRequest, string>> = {};
 
     // Username/Email field validation
-    if (!formData.email.trim()) {
+    if (!formData.email?.trim()) {
       errors.email = "Username or email is required";
     }
 
@@ -217,7 +217,6 @@ export default function LoginForm() {
                   <Button
                     className="w-full"
                     size="sm"
-                    type="submit"
                     disabled={isLoading}
                   >
                     {isLoading ? (

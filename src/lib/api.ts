@@ -199,6 +199,11 @@ export const authApi = {
     setUser(response.user);
     return response;
   },
+
+  // Get all users (superadmin only)
+  getAllUsers: async () => {
+    return api.get('/users/list');
+  },
 };
 
 // Form validation helpers

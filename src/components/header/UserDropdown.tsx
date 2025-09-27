@@ -1,10 +1,21 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { getUser, authApi } from "@/lib/api";
+import { User } from "@/types/auth";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const user = getUser();
+    setCurrentUser(user);
+  }, []);
 
   function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     e.stopPropagation();
@@ -15,22 +26,52 @@ export default function UserDropdown() {
     setIsOpen(false);
   }
 
+  const handleLogout = async () => {
+    try {
+      setIsLoading(true);
+      await authApi.logout();
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Even if logout fails, redirect to login
+      router.push("/login");
+    } finally {
+      setIsLoading(false);
+      closeDropdown();
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map(word => word.charAt(0))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
     <div className="relative">
       <button
         onClick={toggleDropdown}
         className="flex items-center text-gray-700 dark:text-gray-400"
       >
-        <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <Image
-            width={44}
-            height={44}
-            src="/images/user/owner.jpg"
-            alt="User"
-          />
+        <span className="mr-3 overflow-hidden rounded-full h-11 w-11 bg-brand-500 flex items-center justify-center text-white font-semibold">
+          {currentUser?.full_name ? (
+            getInitials(currentUser.full_name)
+          ) : (
+            <Image
+              width={44}
+              height={44}
+              src="/images/user/owner.jpg"
+              alt="User"
+            />
+          )}
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">User</span>
+        <span className="block mr-1 font-medium text-theme-sm">
+          {currentUser?.full_name || currentUser?.username || "User"}
+        </span>
 
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
@@ -72,13 +113,13 @@ export default function UserDropdown() {
               Settings
             </Link>
             <hr className="my-2 border-gray-200 dark:border-gray-700" />
-            <Link
-              href="/login"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-              onClick={closeDropdown}
+            <button
+              onClick={handleLogout}
+              disabled={isLoading}
+              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 disabled:opacity-50"
             >
-              Logout
-            </Link>
+              {isLoading ? "Logging out..." : "Logout"}
+            </button>
           </div>
         </div>
       )}
