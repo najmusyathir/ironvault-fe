@@ -204,6 +204,35 @@ export const authApi = {
   getAllUsers: async () => {
     return api.get('/users/list');
   },
+
+  // Room management functions
+  getRooms: async () => {
+    return api.get('/rooms/list');
+  },
+
+  createRoom: async (data: { name: string; description?: string; max_members: number }) => {
+    return api.post('/rooms/create', data);
+  },
+
+  getRoomDetails: async (shortId: string) => {
+    return api.get(`/rooms/${shortId}`);
+  },
+
+  updateRoom: async (shortId: string, data: any) => {
+    return api.put(`/rooms/${shortId}`, data);
+  },
+
+  createRoomInvite: async (roomId: string, data: { max_uses?: number; expires_hours?: number }) => {
+    return api.post(`/rooms/${roomId}/invite`, data);
+  },
+
+  joinRoom: async (inviteCode: string) => {
+    return api.post(`/rooms/join/${inviteCode}`, {});
+  },
+
+  getRoomInvites: async (shortId: string) => {
+    return api.get(`/rooms/${shortId}/invites`);
+  },
 };
 
 // Form validation helpers

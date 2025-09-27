@@ -12,6 +12,7 @@ import {
 import Badge from "@/components/ui/badge/Badge";
 import { authApi, getUser } from "@/lib/api";
 import { User } from "@/types/auth";
+import { PencilIcon } from "@/icons/index";
 
 // Create a search icon component since it's not available in the base template
 const SearchIcon = ({ className = "" }: { className?: string }) => (
@@ -41,6 +42,12 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  // Edit modal state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   useEffect(() => {
     checkUserRoleAndFetchUsers();
@@ -122,6 +129,49 @@ export default function UsersPage() {
 
   const handleRefresh = async () => {
     await fetchUsers();
+  };
+
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setIsEditModalOpen(true);
+    setEditError(null);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingUser(null);
+    setEditError(null);
+  };
+
+  const handleUpdateUser = async (updatedData: Partial<User>) => {
+    if (!editingUser) return;
+
+    try {
+      setEditLoading(true);
+      setEditError(null);
+
+      // For now, we'll simulate the update since there's no update endpoint yet
+      // In a real implementation, you would call: await authApi.updateUser(editingUser.id, updatedData);
+
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Update the user in the local state
+      const updatedUsers = users.map(user =>
+        user.id === editingUser.id ? { ...user, ...updatedData } : user
+      );
+      setUsers(updatedUsers);
+
+      handleCloseEditModal();
+
+      // Show success feedback (you could add a toast notification here)
+      console.log("User updated successfully");
+    } catch (err: any) {
+      console.error("Error updating user:", err);
+      setEditError(err.message || "Failed to update user");
+    } finally {
+      setEditLoading(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -289,6 +339,12 @@ export default function UsersPage() {
                   >
                     Joined
                   </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Actions
+                  </TableCell>
                 </TableRow>
               </TableHeader>
 
@@ -297,7 +353,7 @@ export default function UsersPage() {
                 {filteredUsers.length === 0 ? (
                   <TableRow>
                     <td
-                      colSpan={5}
+                      colSpan={6}
                       className="px-5 py-8 text-center text-gray-500 dark:text-gray-400"
                     >
                       {users.length === 0 ? "No users found" : "No users match your search criteria"}
@@ -353,6 +409,17 @@ export default function UsersPage() {
                           {formatDate(user.created_at)}
                         </span>
                       </TableCell>
+
+                      <TableCell className="px-5 py-4 text-start">
+                        <button
+                          onClick={() => handleEditUser(user)}
+                          className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:text-blue-300 dark:bg-blue-900/30 dark:hover:bg-blue-800/50 transition-colors"
+                          title="Edit user"
+                        >
+                          <PencilIcon className="w-4 h-4 mr-2" />
+                          Edit
+                        </button>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -388,6 +455,159 @@ export default function UsersPage() {
           </div>
         </div>
       </div>
+
+      {/* Edit User Modal */}
+      {isEditModalOpen && editingUser && (
+        <div className="fixed inset-0 z-99999 overflow-y-auto">
+          <div className="flex min-h-screen items-center justify-center p-4">
+            {/* Background overlay */}
+            <div
+              className="fixed inset-0 bg-slate-900/70 transition-opacity"
+              onClick={handleCloseEditModal}
+            ></div>
+
+            {/* Modal panel */}
+            <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all dark:bg-gray-800 sm:my-8 sm:w-full sm:max-w-lg">
+              <div className="bg-white px-4 pb-4 pt-5 dark:bg-gray-800 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                    <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">
+                      Edit User: {editingUser.full_name || editingUser.username}
+                    </h3>
+
+                    {/* Edit Form */}
+                    <form className="space-y-4">
+                      {editError && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
+                          {editError}
+                        </div>
+                      )}
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          name="full_name"
+                          defaultValue={editingUser.full_name || ""}
+                          disabled={editLoading}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Username
+                        </label>
+                        <input
+                          type="text"
+                          name="username"
+                          defaultValue={editingUser.username}
+                          disabled={editLoading}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          defaultValue={editingUser.email}
+                          disabled={editLoading}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Phone
+                        </label>
+                        <input
+                          type="tel"
+                          name="phone"
+                          defaultValue={editingUser.phone || ""}
+                          disabled={editLoading}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Role
+                        </label>
+                        <select
+                          name="role"
+                          defaultValue={editingUser.role}
+                          disabled={editLoading}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        >
+                          <option value="user">User</option>
+                          <option value="admin">Admin</option>
+                          <option value="superadmin">Superadmin</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            name="is_active"
+                            defaultChecked={editingUser.is_active}
+                            disabled={editLoading}
+                            className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700"
+                          />
+                          <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                            Active Account
+                          </span>
+                        </label>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="bg-gray-50 px-4 py-3 dark:bg-gray-700 sm:flex sm:flex-row-reverse sm:px-6">
+                <button
+                  type="button"
+                  disabled={editLoading}
+                  onClick={() => {
+                    // Gather form data
+                    const form = document.querySelector('form');
+                    if (form) {
+                      const formData = new FormData(form);
+                      const updatedData = {
+                        full_name: (formData.get('full_name') as string) || editingUser.full_name,
+                        username: (formData.get('username') as string) || editingUser.username,
+                        email: (formData.get('email') as string) || editingUser.email,
+                        phone: (formData.get('phone') as string) || editingUser.phone,
+                        role: (formData.get('role') as string) || editingUser.role,
+                        is_active: formData.get('is_active') === 'on',
+                      };
+                      handleUpdateUser(updatedData);
+                    }
+                  }}
+                  className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {editLoading ? "Saving..." : "Save Changes"}
+                </button>
+                <button
+                  type="button"
+                  disabled={editLoading}
+                  onClick={handleCloseEditModal}
+                  className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 sm:mt-0 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-600 dark:text-white dark:ring-gray-500 dark:hover:bg-gray-500"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
