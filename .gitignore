@@ -1,0 +1,8 @@
+
+# Node package
+/node_modules
+/.next
+
+# Assets
+/public/images
+/src/icons
