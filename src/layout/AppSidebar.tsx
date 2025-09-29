@@ -278,9 +278,6 @@ const AppSidebar: React.FC = () => {
                   </span>
                 </div>
               </Link>
-              <p className="text-center text-gray-400 dark:text-white/60">
-                Secure and Private Cloud Storage Platform – Safely Store, Share, and Access Files Anywhere
-              </p>
             </div>
           ) : (
             <Image
