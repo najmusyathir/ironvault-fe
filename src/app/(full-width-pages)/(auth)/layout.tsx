@@ -22,15 +22,20 @@ export default function AuthLayout({
               <GridShape />
               <div className="flex flex-col items-center max-w-xs">
                 <Link href="/" className="block mb-4">
-                  <Image
-                    width={231}
-                    height={48}
-                    src="./images/logo/auth-logo.svg"
-                    alt="Logo"
-                  />
+                  <div className="bg-white rounded-2xl p-3 flex gap-3 items-center duration-200 hover:scale-105">
+                    <Image
+                      width={48}
+                      height={48}
+                      src="./images/logo/auth-logo.svg"
+                      alt="Logo"
+                    />
+                    <span className="text-3xl font-bold">
+                      Iron Vault
+                    </span>
+                  </div>
                 </Link>
                 <p className="text-center text-gray-400 dark:text-white/60">
-                  Free and Open-Source Tailwind CSS Admin Dashboard Template
+                  Secure and Private Cloud Storage Platform – Safely Store, Share, and Access Files Anywhere
                 </p>
               </div>
             </div>
