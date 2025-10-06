@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
+import DatePicker from "@/components/form/date-picker";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
@@ -162,7 +163,7 @@ export default function RegisterForm() {
     <div className="flex flex-col flex-1 lg:w-1/2 w-full overflow-y-auto no-scrollbar">
       <div className="w-full max-w-md sm:pt-10 mx-auto mb-5">
         <Link
-          href="/"
+          href="/dashboard"
           className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
         >
           <ChevronLeftIcon />
@@ -331,16 +332,14 @@ export default function RegisterForm() {
 
                   {/* <!-- Birth Date --> */}
                   <div className="flex-1">
-                    <Label>
-                      Birth Date<span className="text-gray-400">(Optional)</span>
-                    </Label>
-                    <Input
-                    className="flex"
-                      type="date"
+                    <DatePicker
                       id="birth_date"
-                      name="birth_date"
-                      value={formData.birth_date}
-                      onChange={(e) => handleInputChange("birth_date", e.target.value)}
+                      label="Birth Date (Optional)"
+                      placeholder="Select birth date"
+                      defaultDate={formData.birth_date || undefined}
+                      onChange={(selectedDates, dateStr) => {
+                        handleInputChange("birth_date", dateStr);
+                      }}
                     />
                   </div>
                 </div>
@@ -402,13 +401,7 @@ export default function RegisterForm() {
 
             <div className="mt-5">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                Already have an account?
-                <Link
-                  href="/login"
-                  className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
-                >
-                  Login
-                </Link>
+                Already have an account? <Link href="/login" className="text-brand-500 hover:text-brand-600 dark:text-brand-400" > Login </Link>
               </p>
             </div>
           </div>

@@ -9,9 +9,11 @@ import { User } from "../types/auth";
 import {
   GridIcon,
   GroupIcon,
+  PlusIcon,
   PlugInIcon,
   ChevronDownIcon,
   HorizontaLDots,
+  UsersIcon,
 } from "../icons/index";
 
 type NavItem = {
@@ -27,6 +29,16 @@ const getNavItems = (userRole?: string): NavItem[] => {
       icon: <GridIcon />,
       name: "Dashboard",
       path: "/",
+    },
+    {
+      icon: <UsersIcon />,
+      name: "Rooms",
+      path: "/rooms",
+    },
+    {
+      icon: <PlusIcon />,
+      name: "Join",
+      path: "/join",
     },
   ];
 
@@ -259,25 +271,23 @@ const AppSidebar: React.FC = () => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
-        className={`py-8 flex  ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+        className={`py-3 flex  ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
           }`}
       >
         <Link href="/">
           {isExpanded || isHovered || isMobileOpen ? (
             <div className="flex flex-col items-center max-w-xs">
-              <Link href="/" className="block mb-4">
-                <div className="bg-white rounded-2xl p-3 flex gap-3 items-center duration-200 hover:scale-105">
-                  <Image
-                    width={48}
-                    height={48}
-                    src="./images/logo/auth-logo.svg"
-                    alt="Logo"
-                  />
-                  <span className="text-3xl font-bold">
-                    Iron Vault
-                  </span>
-                </div>
-              </Link>
+              <div className="bg-white rounded-2xl p-3 flex gap-3 items-center duration-200 hover:scale-105">
+                <Image
+                  width={32}
+                  height={32}
+                  src="./images/logo/auth-logo.svg"
+                  alt="Logo"
+                />
+                <span className="text-xl font-bold">
+                  Iron Vault
+                </span>
+              </div>
             </div>
           ) : (
             <Image

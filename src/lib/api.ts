@@ -5,6 +5,10 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8
 
 // Device detection for session tracking
 const getDeviceInfo = (): string => {
+  if (typeof window === 'undefined' || !navigator) {
+    return 'Unknown (Server)';
+  }
+
   const userAgent = navigator.userAgent;
   const platform = navigator.platform;
 
@@ -79,7 +83,7 @@ class ApiClient {
       ...options,
     };
 
-    // Add authorization header if token exists
+    // Authorization is now optional - only add header if token exists
     const token = getToken();
     if (token) {
       config.headers = {
@@ -192,6 +196,13 @@ export const authApi = {
     return api.get<User>('/users/me');
   },
 
+  // Update profile
+  updateProfile: async (data: Partial<User>): Promise<User> => {
+    const response = await api.put<User>('/users/me', data);
+    setUser(response);
+    return response;
+  },
+
   // Refresh token
   refreshToken: async (): Promise<AuthResponse> => {
     const response = await api.post<AuthResponse>('/users/refresh', {});
@@ -207,31 +218,69 @@ export const authApi = {
 
   // Room management functions
   getRooms: async () => {
-    return api.get('/rooms/list');
+    return api.get('/rooms/');
   },
 
   createRoom: async (data: { name: string; description?: string; max_members: number }) => {
-    return api.post('/rooms/create', data);
+    return api.post('/rooms/', data);
   },
 
-  getRoomDetails: async (shortId: string) => {
-    return api.get(`/rooms/${shortId}`);
+  getRoomDetails: async (roomId: number) => {
+    return api.get(`/rooms/${roomId}`);
   },
 
-  updateRoom: async (shortId: string, data: any) => {
-    return api.put(`/rooms/${shortId}`, data);
+  updateRoom: async (roomId: number, data: any) => {
+    return api.put(`/rooms/${roomId}`, data);
   },
 
-  createRoomInvite: async (roomId: string, data: { max_uses?: number; expires_hours?: number }) => {
+  createRoomInvite: async (roomId: number, data: { invitee_email: string; message?: string }) => {
     return api.post(`/rooms/${roomId}/invite`, data);
   },
 
+  // Create invite code (new endpoint)
+  createRoomInviteCode: async (roomId: number, data: { max_uses?: number; expires_hours?: number }) => {
+    return api.post(`/rooms/${roomId}/invite-codes`, data);
+  },
+
+  // Get room invite codes (new endpoint)
+  getRoomInviteCodes: async (roomId: number) => {
+    return api.get(`/rooms/${roomId}/invite-codes`);
+  },
+
+  // Join room with invite code
   joinRoom: async (inviteCode: string) => {
     return api.post(`/rooms/join/${inviteCode}`, {});
   },
 
-  getRoomInvites: async (shortId: string) => {
-    return api.get(`/rooms/${shortId}/invites`);
+  // Room member management functions
+  getRoomMembers: async (roomId: number) => {
+    return api.get(`/rooms/${roomId}/members`);
+  },
+
+  addMember: async (roomId: number, userId: number) => {
+    return api.post(`/rooms/${roomId}/members`, { user_id: userId });
+  },
+
+  removeMember: async (roomId: number, userId: number) => {
+    return api.delete(`/rooms/${roomId}/members/${userId}`);
+  },
+
+  // Invitation management functions (not implemented yet in backend)
+  // acceptInvitation: async (invitationId: number) => {
+  //   return api.post(`/rooms/invitations/${invitationId}/accept`);
+  // },
+
+  // rejectInvitation: async (invitationId: number) => {
+  //   return api.post(`/rooms/invitations/${invitationId}/reject`);
+  // },
+
+  getReceivedInvitations: async () => {
+    return api.get('/rooms/invitations/received');
+  },
+
+  // Room management functions
+  deleteRoom: async (roomId: number) => {
+    return api.delete(`/rooms/${roomId}`);
   },
 };
 
@@ -278,4 +327,23 @@ export const validationHelpers = {
   },
 };
 
+// Public API functions (no authentication required)
+export const publicApi = {
+  // Get all rooms (public access)
+  getRooms: async () => {
+    return api.get('/rooms/');
+  },
+
+  // Get room details (public access)
+  getRoomDetails: async (roomId: number) => {
+    return api.get(`/rooms/${roomId}`);
+  },
+
+  // Join room with invite code (public access)
+  joinRoom: async (inviteCode: string) => {
+    return api.post(`/rooms/join/${inviteCode}`, {});
+  },
+};
+
 export default api;
+export { api };
