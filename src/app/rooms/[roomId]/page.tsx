@@ -10,8 +10,6 @@ import {
   UsersIcon,
   LockIcon,
   UnlockIcon,
-  UserIcon,
-  CalendarIcon,
   SettingsIcon,
   ShareIcon,
   CopyIcon,
@@ -63,6 +61,8 @@ export default function RoomViewPage() {
     try {
       setLoading(true);
       setError(null);
+      console.log("room details loaded")
+
 
       const response = await authApi.getRoomDetails(parseInt(roomId)) as any;
       const roomData = response.room || response;
@@ -81,6 +81,7 @@ export default function RoomViewPage() {
         isCreator,
         canManage
       });
+      console.log(roomDetails)
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load room details";
       setError(errorMessage);
@@ -546,8 +547,7 @@ export default function RoomViewPage() {
                   </label>
                   <Input
                     type="number"
-                    min="0"
-                    value={maxUses}
+                    value={maxUses.toString()}
                     onChange={(e) => setMaxUses(parseInt(e.target.value) || 0)}
                     className="w-full"
                   />
@@ -558,8 +558,7 @@ export default function RoomViewPage() {
                   </label>
                   <Input
                     type="number"
-                    min="0"
-                    value={expiresHours}
+                    value={expiresHours.toString()}
                     onChange={(e) => setExpiresHours(parseInt(e.target.value) || 0)}
                     className="w-full"
                   />
