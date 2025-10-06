@@ -23,7 +23,16 @@ import Link from "next/link";
 interface RoomDetails {
   room: Room;
   members: RoomMember[];
-  inviteCodes: any[];
+  inviteCodes: Array<{
+    id: number;
+    room_id: number;
+    code: string;
+    max_uses?: number;
+    current_uses: number;
+    created_at: string;
+    expires_at?: string;
+    is_active: boolean;
+  }>;
   isCreator: boolean;
   canManage: boolean;
 }
@@ -68,7 +77,20 @@ export default function RoomViewPage() {
         return;
       }
 
-      const response = await authApi.getRoomDetails(parseInt(roomId)) as any;
+      const response = await authApi.getRoomDetails(parseInt(roomId)) as {
+        room?: Room;
+        members?: RoomMember[];
+        invite_codes?: Array<{
+          id: number;
+          room_id: number;
+          code: string;
+          max_uses?: number;
+          current_uses: number;
+          created_at: string;
+          expires_at?: string;
+          is_active: boolean;
+        }>;
+      };
       const roomData = response.room || response;
       const members = response.members || [];
       const inviteCodes = response.invite_codes || [];
@@ -404,13 +426,46 @@ export default function RoomViewPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {
-                          // TODO: Implement remove member functionality
-                          console.log('Remove member:', member.user_id);
+                        onClick={async () => {
+                          const memberName = member.user?.full_name || member.user?.username || 'this user';
+                          if (confirm(`Are you sure you want to remove ${memberName} from the room?`)) {
+                            try {
+                              await authApi.removeMember(room.id, member.user_id);
+                              const user = getUser();
+                              if (user) loadRoomDetails(user); // Refresh the room details
+                            } catch (error: unknown) {
+                              const errorMessage = error instanceof Error ? error.message : 'Failed to remove member';
+                              setError(errorMessage);
+                            }
+                          }
                         }}
                         className="text-red-600 hover:text-red-700"
                       >
                         Remove
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Show "Leave Room" button for current user */}
+                  {member.user_id === currentUser?.id && member.role !== RoomRole.CREATOR && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          if (confirm('Are you sure you want to leave this room?')) {
+                            try {
+                              await authApi.removeMember(room.id, member.user_id);
+                              router.push('/rooms'); // Redirect to rooms list after leaving
+                            } catch (error: unknown) {
+                              const errorMessage = error instanceof Error ? error.message : 'Failed to leave room';
+                              setError(errorMessage);
+                            }
+                          }
+                        }}
+                        className="text-gray-600 hover:text-gray-700"
+                      >
+                        Leave Room
                       </Button>
                     </div>
                   )}

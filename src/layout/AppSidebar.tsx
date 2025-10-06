@@ -28,7 +28,7 @@ const getNavItems = (userRole?: string): NavItem[] => {
     {
       icon: <GridIcon />,
       name: "Dashboard",
-      path: "/",
+      path: "/dashboard",
     },
     {
       icon: <UsersIcon />,
