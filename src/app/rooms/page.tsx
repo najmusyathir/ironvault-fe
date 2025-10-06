@@ -22,8 +22,8 @@ interface RoomFormState {
 
 export default function RoomsPage() {
   const router = useRouter();
-  const currentUser = getUser();
-  const canCreateRoom = currentUser?.role === "admin" || currentUser?.role === "superadmin";
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [canCreateRoom, setCanCreateRoom] = useState(false);
 
   const [formState, setFormState] = useState<RoomFormState>({
     isLoading: false,
@@ -34,6 +34,13 @@ export default function RoomsPage() {
   });
 
   const { isLoading, error, searchQuery, rooms, isCreateModalOpen } = formState;
+
+  useEffect(() => {
+    // Initialize user data on client side only
+    const user = getUser();
+    setCurrentUser(user);
+    setCanCreateRoom(user?.role === "admin" || user?.role === "superadmin");
+  }, []);
 
   useEffect(() => {
     loadRooms();
