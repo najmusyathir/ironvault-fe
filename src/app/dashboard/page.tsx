@@ -397,6 +397,11 @@ function RoomDetailsModal({ room, onClose, onUpdate }: {
   const [loading, setLoading] = useState(false);
   const user = getUser();
 
+  // Check if user can manage the room (create invite codes)
+  const canManageRoom = room.creator_id === user?.id ||
+                       room.user_role === 'admin' ||
+                       room.user_role === 'creator';
+
   useEffect(() => {
     if (activeTab === "invites") {
       loadInviteCodes();
@@ -542,13 +547,19 @@ function RoomDetailsModal({ room, onClose, onUpdate }: {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">Invite Codes</h3>
-              <Button
-                onClick={createInviteCode}
-                disabled={loading}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                {loading ? "Creating..." : "Create Invite Code"}
-              </Button>
+              {canManageRoom ? (
+                <Button
+                  onClick={createInviteCode}
+                  disabled={loading}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {loading ? "Creating..." : "Create Invite Code"}
+                </Button>
+              ) : (
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  Only room admins can create invite codes
+                </div>
+              )}
             </div>
             <div className="space-y-3">
               {inviteCodes.map((code: any) => (
