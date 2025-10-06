@@ -122,29 +122,6 @@ export default function RoomsPage() {
 
   return (
     <div className="flex flex-col flex-1 w-full">
-      {/* Header */}
-      <div className="flex flex-col items-start justify-between gap-4 px-4 py-4 sm:flex-row sm:px-6 lg:px-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Rooms
-          </h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Manage your rooms and join new ones
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {canCreateRoom && (
-            <Button
-              onClick={() => setFormState(prev => ({ ...prev, isCreateModalOpen: true }))}
-              className="flex items-center gap-2"
-            >
-              <PlusIcon className="w-4 h-4" />
-              Create Room
-            </Button>
-          )}
-        </div>
-      </div>
-
       {/* Search and Filter */}
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
