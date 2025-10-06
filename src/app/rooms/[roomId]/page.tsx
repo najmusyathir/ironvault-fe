@@ -51,27 +51,31 @@ export default function RoomViewPage() {
     const user = getUser();
     setCurrentUser(user);
     if (user) {
-      loadRoomDetails();
+      loadRoomDetails(user); // Pass user directly
     } else {
       router.push('/login');
     }
   }, [roomId]);
 
-  const loadRoomDetails = async () => {
+  const loadRoomDetails = async (user: User) => {
     try {
       setLoading(true);
       setError(null);
       console.log("room details loaded")
 
+      if (!user) {
+        router.push('/login');
+        return;
+      }
 
       const response = await authApi.getRoomDetails(parseInt(roomId)) as any;
       const roomData = response.room || response;
       const members = response.members || [];
       const inviteCodes = response.invite_codes || [];
 
-      const isCreator = currentUser?.id === roomData.creator_id;
+      const isCreator = Number(user.id) === Number(roomData.creator_id);
       const canManage = isCreator || members.some((m: RoomMember) =>
-        m.user_id === currentUser?.id && (m.role === RoomRole.ADMIN || m.role === RoomRole.CREATOR)
+        Number(m.user_id) === Number(user.id) && (m.role === RoomRole.ADMIN || m.role === RoomRole.CREATOR || String(m.role) === 'creator' || String(m.role) === 'admin')
       );
 
       setRoomDetails({
@@ -81,7 +85,7 @@ export default function RoomViewPage() {
         isCreator,
         canManage
       });
-      console.log(roomDetails)
+      console.log("roomdetails set with isCreator:", isCreator, "canManage:", canManage)
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load room details";
       setError(errorMessage);
@@ -105,7 +109,8 @@ export default function RoomViewPage() {
       setInviteEmail("");
       setInviteMessage("");
       setShowInviteModal(false);
-      loadRoomDetails();
+      const user = getUser();
+      if (user) loadRoomDetails(user);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Failed to send invitation";
       setError(errorMessage);
@@ -124,7 +129,8 @@ export default function RoomViewPage() {
       setMaxUses(1);
       setExpiresHours(24);
       setShowInviteCodeModal(false);
-      loadRoomDetails();
+      const user = getUser();
+      if (user) loadRoomDetails(user);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Failed to create invite code";
       setError(errorMessage);
@@ -243,7 +249,7 @@ export default function RoomViewPage() {
               </Button>
               {isCreator && (
                 <Button
-                  onClick={() => {/* TODO: Implement room editing */}}
+                  onClick={() => {/* TODO: Implement room editing */ }}
                   variant="outline"
                   className="flex items-center gap-2"
                 >
@@ -395,19 +401,6 @@ export default function RoomViewPage() {
 
                   {canManage && member.user_id !== currentUser?.id && (
                     <div className="flex items-center gap-2">
-                      {member.role !== RoomRole.CREATOR && (
-                        <select
-                          value={member.role}
-                          onChange={(e) => {
-                            // TODO: Implement role change functionality
-                            console.log('Change role to:', e.target.value);
-                          }}
-                          className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-                        >
-                          <option value={RoomRole.MEMBER}>Member</option>
-                          <option value={RoomRole.ADMIN}>Admin</option>
-                        </select>
-                      )}
                       <Button
                         variant="outline"
                         size="sm"
