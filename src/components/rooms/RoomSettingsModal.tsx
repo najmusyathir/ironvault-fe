@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { UpdateRoomRequest } from "@/types/rooms";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
-import { LockIcon, UnlockIcon, XIcon } from "@/icons";
+import { LockIcon, UnlockIcon, XIcon, TrashIcon } from "@/icons";
 
 interface RoomSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (data: UpdateRoomRequest) => Promise<void>;
+  onDelete: () => Promise<void>;
   room: {
     id: number;
     name: string;
@@ -23,8 +25,10 @@ export default function RoomSettingsModal({
   isOpen,
   onClose,
   onSave,
+  onDelete,
   room
 }: RoomSettingsModalProps) {
+  const router = useRouter();
   const [formData, setFormData] = useState<UpdateRoomRequest>({
     name: room.name,
     description: room.description || "",
@@ -33,7 +37,9 @@ export default function RoomSettingsModal({
   });
 
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleInputChange = (field: keyof UpdateRoomRequest, value: string | number | boolean) => {
     setFormData(prev => ({
@@ -89,6 +95,24 @@ export default function RoomSettingsModal({
       setError(err.message || "Failed to update room settings");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDeleteRoom = async () => {
+    console.log("handleDeleteRoom called");
+    try {
+      setIsDeleting(true);
+      setError(null);
+      console.log("Calling onDelete...");
+      await onDelete();
+      console.log("onDelete completed, redirecting...");
+      router.push('/rooms');
+    } catch (err: any) {
+      console.error("Delete room error:", err);
+      setError(err.message || "Failed to delete room");
+      setShowDeleteConfirm(false);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -218,25 +242,99 @@ export default function RoomSettingsModal({
             )}
 
             {/* Action Buttons */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <Button
+            <div className="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button
                 type="button"
-                onClick={onClose}
-                variant="outline"
-                disabled={isSaving}
+                onClick={() => {
+                  console.log("Delete button clicked");
+                  setShowDeleteConfirm(true);
+                }}
+                disabled={isSaving || isDeleting}
+                className="px-4 py-3 text-red-600 hover:text-red-700 border border-red-300 hover:border-red-400 dark:text-red-400 dark:hover:text-red-300 dark:border-red-700 dark:hover:border-red-600 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:order-3 flex items-center"
               >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSaving}
-              >
-                {isSaving ? "Saving..." : "Save Changes"}
-              </Button>
+                <TrashIcon className="w-4 h-4 mr-2" />
+                Delete Room
+              </button>
+
+              <div className="flex gap-3 sm:order-1 sm:mr-auto">
+                <Button
+                  type="button"
+                  onClick={onClose}
+                  variant="outline"
+                  disabled={isSaving || isDeleting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSaving || isDeleting}
+                >
+                  {isSaving ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
             </div>
           </form>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl dark:bg-gray-800 w-full max-w-md">
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <TrashIcon className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Delete Room
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    This action cannot be undone
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <p className="text-gray-700 dark:text-gray-300 mb-4">
+                  Are you sure you want to delete the room <span className="font-semibold">"{room.name}"</span>?
+                  This will permanently remove:
+                </p>
+                <ul className="text-sm text-gray-600 dark:text-gray-400 list-disc list-inside space-y-1">
+                  <li>All room settings and configurations</li>
+                  <li>All member access and permissions</li>
+                  <li>All uploaded files and documents</li>
+                  <li>All invite codes and pending invitations</li>
+                </ul>
+              </div>
+
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6">
+                <p className="text-sm text-red-800 dark:text-red-300">
+                  <strong>Warning:</strong> This action is irreversible. All room data will be permanently deleted.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <Button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  variant="outline"
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleDeleteRoom}
+                  disabled={isDeleting}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {isDeleting ? "Deleting..." : "Delete Room"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

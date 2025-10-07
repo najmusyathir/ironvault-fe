@@ -175,6 +175,26 @@ export default function RoomViewPage() {
     }
   };
 
+  const handleDeleteRoom = async () => {
+    console.log("handleDeleteRoom called in room page");
+    if (!roomDetails) {
+      console.log("No room details available");
+      return;
+    }
+
+    try {
+      console.log("Calling authApi.deleteRoom for room:", roomDetails.room.id);
+      await authApi.deleteRoom(roomDetails.room.id);
+      console.log("Delete API call successful");
+      // Modal will handle redirect to rooms page
+    } catch (err: unknown) {
+      console.error("Delete room error in page:", err);
+      const errorMessage = err instanceof Error ? err.message : "Failed to delete room";
+      setError(errorMessage);
+      throw err; // Re-throw to let the modal handle the error
+    }
+  };
+
   const copyInviteCode = async (code: string) => {
     try {
       await navigator.clipboard.writeText(code);
@@ -652,6 +672,7 @@ export default function RoomViewPage() {
           isOpen={showSettingsModal}
           onClose={() => setShowSettingsModal(false)}
           onSave={handleSaveSettings}
+          onDelete={handleDeleteRoom}
           room={roomDetails.room}
         />
       )}

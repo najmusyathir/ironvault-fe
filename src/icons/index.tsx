@@ -26,7 +26,7 @@ import SettingsIcon from "./pencil.svg";
 // import CloudUploadIcon from "./cloud-upload.svg";
 // import DocumentIcon from "./document.svg";
 import TrashIcon from "./trash.svg";
-// import DownloadIcon from "./download.svg";
+import DownloadIcon from "./download.svg";
 // import ArrowsUpDownIcon from "./arrows-up-down.svg";
 // import ArrowsUpIcon from "./arrows-up.svg";
 // import ArrowsDownIcon from "./arrows-down.svg";
@@ -61,7 +61,7 @@ export {
   // CloudUploadIcon,
   // DocumentIcon,
   TrashIcon,
-  // DownloadIcon,
+  DownloadIcon,
   // ArrowsUpDownIcon,
   // ArrowsUpIcon,
   // ArrowsDownIcon,
