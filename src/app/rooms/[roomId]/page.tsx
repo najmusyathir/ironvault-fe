@@ -19,6 +19,7 @@ import {
 } from "@/icons";
 import { getInitials } from "@/lib/utils";
 import Link from "next/link";
+import RoomSettingsModal from "@/components/rooms/RoomSettingsModal";
 
 interface RoomDetails {
   room: Room;
@@ -48,6 +49,7 @@ export default function RoomViewPage() {
   const [error, setError] = useState<string | null>(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showInviteCodeModal, setShowInviteCodeModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteMessage, setInviteMessage] = useState("");
   const [maxUses, setMaxUses] = useState(1);
@@ -156,6 +158,20 @@ export default function RoomViewPage() {
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Failed to create invite code";
       setError(errorMessage);
+    }
+  };
+
+  const handleSaveSettings = async (data: any) => {
+    if (!roomDetails) return;
+
+    try {
+      await authApi.updateRoom(roomDetails.room.id, data);
+      const user = getUser();
+      if (user) loadRoomDetails(user);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to update room settings";
+      setError(errorMessage);
+      throw err; // Re-throw to let the modal handle the error
     }
   };
 
@@ -271,7 +287,7 @@ export default function RoomViewPage() {
               </Button>
               {isCreator && (
                 <Button
-                  onClick={() => {/* TODO: Implement room editing */ }}
+                  onClick={() => setShowSettingsModal(true)}
                   variant="outline"
                   className="flex items-center gap-2"
                 >
@@ -628,6 +644,16 @@ export default function RoomViewPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Room Settings Modal */}
+      {showSettingsModal && roomDetails && (
+        <RoomSettingsModal
+          isOpen={showSettingsModal}
+          onClose={() => setShowSettingsModal(false)}
+          onSave={handleSaveSettings}
+          room={roomDetails.room}
+        />
       )}
     </div>
   );

@@ -1,4 +1,5 @@
 import { RegisterRequest, LoginRequest, AuthResponse, ApiError, User } from '@/types/auth';
+import { UpdateRoomRequest } from '@/types/rooms';
 
 // API base URL - configurable via environment variable
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
@@ -229,7 +230,7 @@ export const authApi = {
     return api.get(`/rooms/${roomId}`);
   },
 
-  updateRoom: async (roomId: number, data: any) => {
+  updateRoom: async (roomId: number, data: UpdateRoomRequest) => {
     return api.put(`/rooms/${roomId}`, data);
   },
 
