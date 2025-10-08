@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Button from "@/components/ui/button/Button";
-import { Input } from "@/components/form/input/InputField";
 import { RoomFile, FileCategory, formatFileSize, getFileIcon } from "@/types/files";
 
 interface FileListProps {
@@ -58,20 +57,39 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
 
   const handleDownload = async (file: RoomFile) => {
     try {
-      const { authApi } = await import("@/lib/api");
-      const response = await authApi.downloadFile(roomId, file.id);
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`http://localhost:8000/rooms/${roomId}/files/${file.id}/download`, {
+        method: 'GET',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
 
-      // Create download link
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.status}`);
+      }
+
+      // Get the filename from the response headers
+      const contentDisposition = response.headers.get('content-disposition');
+      let filename = file.original_filename;
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      // Convert the response to a blob and create download link
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = response.download_url;
-      link.download = response.filename;
+      link.href = url;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.log("Backend not ready, simulating download for demo");
-      // Simulate download for demo purposes
-      alert(`Downloading "${file.original_filename}" (${formatFileSize(file.file_size)})\n\nThis is a demo - no actual file will be downloaded.`);
+      console.error("Download error:", error);
+      alert(`Failed to download "${file.original_filename}". Please try again.`);
     }
   };
 

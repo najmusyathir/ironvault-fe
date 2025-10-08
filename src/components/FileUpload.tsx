@@ -16,6 +16,7 @@ export function FileUpload({ roomId, onUploadSuccess }: FileUploadProps) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [description, setDescription] = useState("");
   const [isEncrypted, setIsEncrypted] = useState(false);
+  const [fileInputKey, setFileInputKey] = useState(Date.now());
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -146,13 +147,14 @@ const uploadFiles = useCallback(async () => {
       setSelectedFiles([]);
       setDescription("");
       setIsEncrypted(false);
+      setFileInputKey(Date.now()); // Reset file input
 
       // Notify parent component
       if (onUploadSuccess) {
         onUploadSuccess();
       }
 
-      alert(`Successfully uploaded ${selectedFiles.length} file${selectedFiles.length !== 1 ? 's' : ''} to Iron Vault! 🎉`);
+      // alert(`Successfully uploaded ${selectedFiles.length} file${selectedFiles.length !== 1 ? 's' : ''} to Iron Vault! 🎉`);
     } catch (error) {
       console.error("Error uploading files:", error);
       alert("Failed to process files. Please try again.");
@@ -204,6 +206,7 @@ const uploadFiles = useCallback(async () => {
           Drag and drop files here or click to browse (Max 100MB per file)
         </p>
         <input
+          key={fileInputKey}
           type="file"
           multiple
           onChange={handleFileSelect}
