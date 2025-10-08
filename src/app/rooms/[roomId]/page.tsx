@@ -6,7 +6,6 @@ import { Room, RoomMember, RoomRole } from "@/types/rooms";
 import { User } from "@/types/auth";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
-import { Tabs, TabPanel } from "@/components/ui/tabs";
 import {
   FolderIcon,
 } from "@/icons";
@@ -15,11 +14,11 @@ import {
   LockIcon,
   UnlockIcon,
   SettingsIcon,
-  ShareIcon,
   CopyIcon,
-  EnvelopeIcon,
   SearchIcon,
-  XIcon
+  XIcon,
+  CalendarIcon,
+  PlusIcon
 } from "@/icons";
 import { getInitials } from "@/lib/utils";
 import Link from "next/link";
@@ -56,6 +55,8 @@ export default function RoomViewPage() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showInviteCodeModal, setShowInviteCodeModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showInviteCodesModal, setShowInviteCodesModal] = useState(false);
+  const [inviteCodesLoading, setInviteCodesLoading] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteMessage, setInviteMessage] = useState("");
   const [maxUses, setMaxUses] = useState(1);
@@ -171,7 +172,7 @@ export default function RoomViewPage() {
     }
   };
 
-  const handleSaveSettings = async (data: any) => {
+  const handleSaveSettings = async (data: { name?: string; description?: string; max_members?: number; is_private?: boolean }) => {
     if (!roomDetails) return;
 
     try {
@@ -212,6 +213,60 @@ export default function RoomViewPage() {
       setTimeout(() => setCopiedCode(false), 2000);
     } catch (err) {
       console.error("Failed to copy invite code:", err);
+    }
+  };
+
+  // New invite code functions for modal
+  const loadInviteCodesForModal = async () => {
+    if (!roomDetails) return;
+
+    try {
+      setInviteCodesLoading(true);
+      const response = await authApi.getRoomInviteCodes(roomDetails.room.id) as { invite_codes: typeof roomDetails.inviteCodes };
+      // Update the roomDetails with fresh invite codes
+      setRoomDetails(prev => prev ? {
+        ...prev,
+        inviteCodes: response.invite_codes || []
+      } : null);
+    } catch (error) {
+      console.error("Error loading invite codes:", error);
+      setError("Failed to load invite codes");
+    } finally {
+      setInviteCodesLoading(false);
+    }
+  };
+
+  const handleCreateInviteCodeInModal = async () => {
+    if (!roomDetails) return;
+
+    try {
+      setInviteCodesLoading(true);
+      await authApi.createRoomInviteCode(roomDetails.room.id, { max_uses: 10, expires_hours: 24 });
+      await loadInviteCodesForModal();
+    } catch (error) {
+      console.error("Error creating invite code:", error);
+      setError("Failed to create invite code");
+    } finally {
+      setInviteCodesLoading(false);
+    }
+  };
+
+  const handleDeleteInviteCodeInModal = async (codeId: number) => {
+    if (!roomDetails) return;
+
+    try {
+      await fetch(`http://localhost:8000/rooms/${roomDetails.room.id}/invite-codes/${codeId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      await loadInviteCodesForModal();
+    } catch (error) {
+      console.error("Error deleting invite code:", error);
+      setError("Failed to delete invite code");
     }
   };
 
@@ -300,20 +355,15 @@ export default function RoomViewPage() {
           {canManage && (
             <div className="flex items-center gap-3">
               <Button
-                onClick={() => setShowInviteCodeModal(true)}
+                onClick={() => {
+                  setShowInviteCodesModal(true);
+                  loadInviteCodesForModal();
+                }}
                 variant="outline"
                 className="flex items-center gap-2"
               >
-                <ShareIcon className="w-4 h-4" />
+                <PlusIcon className="w-4 h-4" />
                 Create Invite Code
-              </Button>
-              <Button
-                onClick={() => setShowInviteModal(true)}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <EnvelopeIcon className="w-4 h-4" />
-                Invite User
               </Button>
               {isCreator && (
                 <Button
@@ -388,22 +438,20 @@ export default function RoomViewPage() {
           <nav className="flex space-x-8 px-6" aria-label="Tabs">
             <button
               onClick={() => setActiveTab("files")}
-              className={`${
-                activeTab === "files"
-                  ? "border-brand-500 text-brand-600 dark:text-brand-400 dark:border-brand-400"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
+              className={`${activeTab === "files"
+                ? "border-brand-500 text-brand-600 dark:text-brand-400 dark:border-brand-400"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
             >
               <FolderIcon className="w-4 h-4 inline mr-1" />
               Files
             </button>
             <button
               onClick={() => setActiveTab("users")}
-              className={`${
-                activeTab === "users"
-                  ? "border-brand-500 text-brand-600 dark:text-brand-400 dark:border-brand-400"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
+              className={`${activeTab === "users"
+                ? "border-brand-500 text-brand-600 dark:text-brand-400 dark:border-brand-400"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
             >
               👥 Users ({members.length})
             </button>
@@ -727,6 +775,92 @@ export default function RoomViewPage() {
           onDelete={handleDeleteRoom}
           room={roomDetails.room}
         />
+      )}
+
+      {/* Invite Codes Modal */}
+      {showInviteCodesModal && roomDetails && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-6">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                Invite Codes for {roomDetails.room.name}
+              </h2>
+              <button
+                onClick={() => setShowInviteCodesModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Create Invite Code Section */}
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                Manage Invite Codes
+              </h3>
+              <Button
+                onClick={handleCreateInviteCodeInModal}
+                disabled={inviteCodesLoading}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {inviteCodesLoading ? "Creating..." : "Create Invite Code"}
+              </Button>
+            </div>
+
+            {/* Invite Codes List */}
+            <div className="space-y-3">
+              {roomDetails.inviteCodes.map((code) => (
+                <div key={code.id} className="relative group bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <p className="font-mono text-lg text-gray-900 dark:text-white mb-2">{code.code}</p>
+                      <div className="flex gap-4 text-sm text-gray-600 dark:text-gray-400">
+                        <span className="flex items-center gap-1">
+                          <UsersIcon className="w-6 h-6" />
+                          Uses: {code.current_uses}{code.max_uses ? `/${code.max_uses}` : '/∞'}
+                        </span>
+                        {code.expires_at && (
+                          <span className="flex items-center gap-1">
+                            <CalendarIcon className="w-6 h-6" />
+                            Expires: {new Date(code.expires_at).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteInviteCodeInModal(code.id)}
+                      className="text-red-500 hover:text-red-700 transition-colors"
+                      title="Delete invite code"
+                    >
+                      <XIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {roomDetails.inviteCodes.length === 0 && (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <CalendarIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p className="text-lg font-medium mb-1">No invite codes yet</p>
+                  <p className="text-sm">Create your first invite code to share this room with others</p>
+                </div>
+              )}
+            </div>
+
+            {/* Close Button */}
+            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <Button
+                onClick={() => setShowInviteCodesModal(false)}
+                variant="outline"
+                className="w-full"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
