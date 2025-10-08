@@ -121,7 +121,7 @@ export default function RoomsPage() {
   );
 
   return (
-    <div className="flex flex-col flex-1 w-full">
+    <div className="flex flex-col flex-1 w-full gap-3">
       {/* Search and Filter */}
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

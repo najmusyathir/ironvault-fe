@@ -136,12 +136,14 @@ export default function Dashboard() {
                   {user.role?.toUpperCase() || "USER"}
                 </Badge>
               )}
-              <Button
-                onClick={() => setShowCreateModal(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Create Room
-              </Button>
+              {user && (user.role === "superadmin" || user.role === "admin") && (
+                <Button
+                  onClick={() => setShowCreateModal(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Create Room
+                </Button>
+              )}
               <Button
                 onClick={handleJoinRoom}
                 variant="outline"
@@ -257,11 +259,16 @@ export default function Dashboard() {
               </div>
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No rooms yet</h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Create your first room to get started collaborating
+                {user && (user.role === "superadmin" || user.role === "admin")
+                  ? "Create your first room to get started collaborating"
+                  : "Ask an admin or superadmin to create the first room"
+                }
               </p>
-              <Button onClick={() => setShowCreateModal(true)}>
-                Create Your First Room
-              </Button>
+              {user && (user.role === "superadmin" || user.role === "admin") && (
+                <Button onClick={() => setShowCreateModal(true)}>
+                  Create Your First Room
+                </Button>
+              )}
             </div>
           )}
         </div>
