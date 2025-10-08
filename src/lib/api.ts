@@ -302,13 +302,17 @@ export const authApi = {
     if (description) formData.append('description', description);
     if (isEncrypted) formData.append('is_encrypted', isEncrypted.toString());
 
-    const response = await api.post(`/rooms/${roomId}/files`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    const token = getToken();
+    const response = await fetch(`${API_BASE_URL}/rooms/${roomId}/files/`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
     });
-    return response.file;
+
+    if (!response.ok) throw await response.json();
+    return await response.json();
   },
+
 
   getRoomFiles: async (roomId: number, filters?: FileSearchFilters): Promise<FileListResponse> => {
     const params = new URLSearchParams();
