@@ -229,6 +229,11 @@ export const authApi = {
     return api.get('/users/list');
   },
 
+  // Update any user (superadmin only)
+  updateUser: async (userId: number, data: Partial<User>) => {
+    return api.put(`/users/${userId}`, data);
+  },
+
   // Room management functions
   getRooms: async () => {
     return api.get('/rooms/');

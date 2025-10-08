@@ -150,22 +150,19 @@ export default function UsersPage() {
       setEditLoading(true);
       setEditError(null);
 
-      // For now, we'll simulate the update since there's no update endpoint yet
-      // In a real implementation, you would call: await authApi.updateUser(editingUser.id, updatedData);
+      // Make real API call to update user
+      const response = await authApi.updateUser(editingUser.id, updatedData);
 
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Update the user in the local state
+      // Update the user in the local state with the response data
       const updatedUsers = users.map(user =>
-        user.id === editingUser.id ? { ...user, ...updatedData } : user
+        user.id === editingUser.id ? { ...user, ...response.user } : user
       );
       setUsers(updatedUsers);
 
       handleCloseEditModal();
 
-      // Show success feedback (you could add a toast notification here)
-      console.log("User updated successfully");
+      // Show success feedback
+      console.log("User updated successfully:", response.message);
     } catch (err: any) {
       console.error("Error updating user:", err);
       setEditError(err.message || "Failed to update user");
