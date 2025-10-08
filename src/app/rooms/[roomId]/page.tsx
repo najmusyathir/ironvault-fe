@@ -57,11 +57,13 @@ export default function RoomViewPage() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showInviteCodesModal, setShowInviteCodesModal] = useState(false);
   const [inviteCodesLoading, setInviteCodesLoading] = useState(false);
+  const [deletingCodeId, setDeletingCodeId] = useState<number | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteMessage, setInviteMessage] = useState("");
   const [maxUses, setMaxUses] = useState(1);
   const [expiresHours, setExpiresHours] = useState(24);
-  const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
 
@@ -209,8 +211,8 @@ export default function RoomViewPage() {
   const copyInviteCode = async (code: string) => {
     try {
       await navigator.clipboard.writeText(code);
-      setCopiedCode(true);
-      setTimeout(() => setCopiedCode(false), 2000);
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode(null), 2000);
     } catch (err) {
       console.error("Failed to copy invite code:", err);
     }
@@ -255,14 +257,7 @@ export default function RoomViewPage() {
     if (!roomDetails) return;
 
     try {
-      await fetch(`http://localhost:8000/rooms/${roomDetails.room.id}/invite-codes/${codeId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
+      await authApi.deleteInviteCode(roomDetails.room.id, codeId);
       await loadInviteCodesForModal();
     } catch (error) {
       console.error("Error deleting invite code:", error);
@@ -613,36 +608,137 @@ export default function RoomViewPage() {
       </div>
 
       {/* Invite Codes Section (if any) */}
-      {canManage && inviteCodes.length > 0 && (
+      {canManage && (
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
           <div className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Active Invite Codes
-            </h3>
-            <div className="space-y-3">
-              {inviteCodes.map((code) => (
-                <div key={code.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                  <div className="flex-1">
-                    <code className="text-sm font-mono text-gray-900 dark:text-white">
-                      {code.code}
-                    </code>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      Uses: {code.current_uses}{code.max_uses ? `/${code.max_uses}` : '∞'}
-                      {code.expires_at && ` • Expires ${formatDate(code.expires_at)}`}
+            {successMessage && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-green-800">{successMessage}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            {error && error.includes('invite code') && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-red-800">{error}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Active Invite Codes ({inviteCodes.length})
+              </h3>
+              <Button
+                onClick={() => {
+                  setShowInviteCodesModal(true);
+                  loadInviteCodesForModal();
+                }}
+                className="flex items-center gap-2"
+              >
+                <PlusIcon className="w-4 h-4" />
+                Create New Code
+              </Button>
+            </div>
+
+            {inviteCodes.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {inviteCodes.map((code) => (
+                  <div key={code.id} className="relative group bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-sm transition-shadow">
+                    {/* Delete button at top right */}
+                    <button
+                      onClick={async () => {
+                        if (confirm('Are you sure you want to delete this invite code?')) {
+                          try {
+                            setDeletingCodeId(code.id);
+                            await authApi.deleteInviteCode(room.id, code.id);
+                            setSuccessMessage('Invite code deleted successfully');
+                            setTimeout(() => setSuccessMessage(null), 3000);
+                            const user = getUser();
+                            if (user) loadRoomDetails(user);
+                          } catch (error) {
+                            console.error('Error deleting invite code:', error);
+                            setError('Failed to delete invite code');
+                          } finally {
+                            setDeletingCodeId(null);
+                          }
+                        }
+                      }}
+                      disabled={deletingCodeId === code.id}
+                      className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md ${
+                        deletingCodeId === code.id
+                          ? 'bg-gray-400 cursor-not-allowed'
+                          : 'bg-red-500 hover:bg-red-600 text-white'
+                      }`}
+                      title="Delete invite code"
+                    >
+                      {deletingCodeId === code.id ? (
+                        <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
+                      ) : (
+                        <XIcon className="w-3 h-3" />
+                      )}
+                    </button>
+
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between">
+                        <code className="font-mono text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-gray-900 dark:text-white">
+                          {code.code}
+                        </code>
+                        <Button
+                          onClick={() => copyInviteCode(code.code)}
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center gap-1 text-xs"
+                        >
+                          <CopyIcon className="w-3 h-3" />
+                          {copiedCode === code.code ? "Copied!" : "Copy"}
+                        </Button>
+                      </div>
+
+                      <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
+                        <span className="flex items-center gap-1">
+                          <UsersIcon className="w-3 h-3" />
+                          Uses: {code.current_uses}{code.max_uses ? `/${code.max_uses}` : '/∞'}
+                        </span>
+                        {code.expires_at && (
+                          <span className="flex items-center gap-1">
+                            <CalendarIcon className="w-3 h-3" />
+                            Expires: {new Date(code.expires_at).toLocaleDateString()}
+                          </span>
+                        )}
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          code.is_active
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        }`}>
+                          {code.is_active ? 'Active' : 'Expired'}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <Button
-                    onClick={() => copyInviteCode(code.code)}
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-1"
-                  >
-                    <CopyIcon className="w-3 h-3" />
-                    {copiedCode ? "Copied!" : "Copy"}
-                  </Button>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <CalendarIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p className="text-lg font-medium mb-1">No invite codes yet</p>
+                <p className="text-sm">Create your first invite code to share this room with others</p>
+              </div>
+            )}
           </div>
         </div>
       )}

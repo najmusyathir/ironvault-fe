@@ -358,6 +358,11 @@ export const authApi = {
   toggleFileVisibility: async (roomId: number, fileId: number, visibility: "private" | "public"): Promise<{message: string; file_id: number; visibility: string}> => {
     return api.patch(`/rooms/${roomId}/files/${fileId}/visibility`, { visibility });
   },
+
+  // Delete invite code
+  deleteInviteCode: async (roomId: number, codeId: number): Promise<{ message: string }> => {
+    return api.delete(`/rooms/${roomId}/invite-codes/${codeId}`);
+  },
 };
 
 // Form validation helpers

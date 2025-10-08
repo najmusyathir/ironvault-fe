@@ -91,7 +91,9 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
   const handleDownload = async (file: RoomFile) => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`http://localhost:8000/rooms/${roomId}/files/${file.id}/download`, {
+      const downloadUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/rooms/${roomId}/files/${file.id}/download`;
+
+      const response = await fetch(downloadUrl, {
         method: 'GET',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
@@ -104,7 +106,7 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
       const contentDisposition = response.headers.get('content-disposition');
       let filename = file.original_filename;
       if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
         if (filenameMatch) {
           filename = filenameMatch[1];
         }
