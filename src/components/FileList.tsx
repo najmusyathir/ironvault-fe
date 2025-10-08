@@ -2,7 +2,15 @@
 
 import { useState, useEffect } from "react";
 import Button from "@/components/ui/button/Button";
-import { RoomFile, FileCategory, formatFileSize, getFileIcon } from "@/types/files";
+import { RoomFile, FileCategory, formatFileSize, getFileIconComponent } from "@/types/files";
+import {
+  FolderIcon,
+  SearchIcon,
+  DownloadIcon,
+  TrashIcon,
+  XIcon,
+  LockIcon
+} from "@/icons";
 
 interface FileListProps {
   roomId: number;
@@ -136,7 +144,7 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
   if (files.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="text-6xl mb-4">📁</div>
+        <FolderIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-medium mb-2">No Files in Iron Vault</h3>
         <p className="text-gray-500 dark:text-gray-400 mb-4">
           {searchTerm || selectedCategory !== "all"
@@ -163,9 +171,7 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
           />
-          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-            🔍
-          </span>
+          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
         </div>
 
         <select
@@ -187,9 +193,12 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
         {filteredFiles.map((file) => (
           <div key={file.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-3">
-              <span className="text-3xl">{getFileIcon(file.category)}</span>
+              {(() => {
+                const IconComponent = getFileIconComponent(file.category);
+                return <IconComponent className="w-8 h-8 text-gray-600" />;
+              })()}
               {file.is_encrypted && (
-                <span className="text-green-500" title="Encrypted">🔒</span>
+                <LockIcon className="text-green-500 w-4 h-4" title="Encrypted" />
               )}
             </div>
 
@@ -217,7 +226,7 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
                 onClick={() => handleDownload(file)}
                 className="flex-1"
               >
-                ⬇️
+                <DownloadIcon className="w-4 h-4" />
               </Button>
               <Button
                 size="sm"
@@ -225,7 +234,7 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
                 onClick={() => handleDelete(file.id)}
                 className="text-red-600 hover:text-red-700"
               >
-                🗑️
+                <TrashIcon className="w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -234,7 +243,7 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
 
       {filteredFiles.length === 0 && files.length > 0 && (
         <div className="text-center py-8">
-          <div className="text-4xl mb-4">🔍</div>
+          <SearchIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium mb-2">No Files Found</h3>
           <p className="text-gray-500 dark:text-gray-400">
             No files match your search criteria. Try adjusting your search or filters.

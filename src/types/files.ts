@@ -130,6 +130,26 @@ export const formatFileSize = (bytes: number): string => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
+export const getFileIconComponent = (category: FileCategory): React.ComponentType<{className?: string}> => {
+  switch (category) {
+    case FileCategory.IMAGE:
+      return require('@/icons/file.svg').default;
+    case FileCategory.VIDEO:
+      return require('@/icons/videos.svg').default;
+    case FileCategory.AUDIO:
+      return require('@/icons/audio.svg').default;
+    case FileCategory.ARCHIVE:
+      return require('@/icons/box-cube.svg').default;
+    case FileCategory.CODE:
+      return require('@/icons/file.svg').default;
+    case FileCategory.DOCUMENT:
+      return require('@/icons/docs.svg').default;
+    default:
+      return require('@/icons/file.svg').default;
+  }
+};
+
+// Keep the old function for backward compatibility
 export const getFileIcon = (category: FileCategory): string => {
   switch (category) {
     case FileCategory.IMAGE:

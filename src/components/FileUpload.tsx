@@ -2,7 +2,12 @@
 
 import { useState, useCallback } from "react";
 import Button from "@/components/ui/button/Button";
-import { FileCategory, getFileCategory, formatFileSize } from "@/types/files";
+import { FileCategory, getFileCategory, formatFileSize, getFileIconComponent } from "@/types/files";
+import {
+  FolderIcon,
+  XIcon,
+  LockIcon
+} from "@/icons";
 
 interface FileUploadProps {
   roomId: number;
@@ -165,22 +170,8 @@ const uploadFiles = useCallback(async () => {
 
   const getFileIcon = (file: File) => {
     const category = getFileCategory(file.name);
-    switch (category) {
-      case FileCategory.IMAGE:
-        return '🖼️';
-      case FileCategory.VIDEO:
-        return '🎬';
-      case FileCategory.AUDIO:
-        return '🎵';
-      case FileCategory.ARCHIVE:
-        return '📦';
-      case FileCategory.CODE:
-        return '💻';
-      case FileCategory.DOCUMENT:
-        return '📄';
-      default:
-        return '📎';
-    }
+    const IconComponent = getFileIconComponent(category);
+    return <IconComponent className="w-6 h-6 text-gray-600" />;
   };
 
   return (
@@ -198,7 +189,7 @@ const uploadFiles = useCallback(async () => {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        <div className="text-4xl mb-4">📁</div>
+        <FolderIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-medium mb-2">
           Upload Files to Iron Vault
         </h3>
@@ -243,7 +234,7 @@ const uploadFiles = useCallback(async () => {
                   disabled={isUploading}
                   className="text-red-500 hover:text-red-700"
                 >
-                  ✕
+                  <XIcon className="w-4 h-4" />
                 </button>
               </div>
             ))}
@@ -276,7 +267,7 @@ const uploadFiles = useCallback(async () => {
               className="rounded border-gray-300"
             />
             <label htmlFor="encrypt" className="flex items-center gap-1 text-sm">
-              🔒 Encrypt files for enhanced security
+              <LockIcon className="w-4 h-4" /> Encrypt files for enhanced security
             </label>
           </div>
         </div>
