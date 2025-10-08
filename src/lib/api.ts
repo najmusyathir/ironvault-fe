@@ -146,6 +146,13 @@ class ApiClient {
     });
   }
 
+  async patch<T>(endpoint: string, data: unknown): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
   async delete<T>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'DELETE',
@@ -296,11 +303,12 @@ export const authApi = {
   },
 
   // File management functions
-  uploadFile: async (roomId: number, file: File, description?: string, isEncrypted?: boolean): Promise<FileUploadResponse> => {
+  uploadFile: async (roomId: number, file: File, description?: string, isEncrypted?: boolean, visibility?: "private" | "public"): Promise<FileUploadResponse> => {
     const formData = new FormData();
     formData.append('file', file);
     if (description) formData.append('description', description);
     if (isEncrypted) formData.append('is_encrypted', isEncrypted.toString());
+    if (visibility) formData.append('visibility', visibility);
 
     const token = getToken();
     const response = await fetch(`${API_BASE_URL}/rooms/${roomId}/files/`, {
@@ -345,6 +353,10 @@ export const authApi = {
 
   getRoomFileStats: async (roomId: number): Promise<FileStats> => {
     return api.get(`/rooms/${roomId}/files/stats`);
+  },
+
+  toggleFileVisibility: async (roomId: number, fileId: number, visibility: "private" | "public"): Promise<{message: string; file_id: number; visibility: string}> => {
+    return api.patch(`/rooms/${roomId}/files/${fileId}/visibility`, { visibility });
   },
 };
 

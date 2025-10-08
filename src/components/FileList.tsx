@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Button from "@/components/ui/button/Button";
+import Switch from "@/components/form/switch/Switch";
 import { RoomFile, FileCategory, formatFileSize, getFileIconComponent } from "@/types/files";
 import {
   FolderIcon,
@@ -24,8 +25,10 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [userRole, setUserRole] = useState<string>("member");
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
-  // Load files (will fail with 404 until backend is ready)
+  // Load files and user info
   const loadFiles = async () => {
     try {
       setLoading(true);
@@ -33,7 +36,29 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
 
       const { authApi } = await import("@/lib/api");
 
-      // This will fail with 404 until backend endpoints are ready
+      // Get current user info
+      const user = await authApi.getCurrentUser();
+      setCurrentUserId(user.id);
+
+      // Get user's role in this room
+      try {
+        const membersResponse = await authApi.getRoomMembers(roomId);
+        const member = membersResponse.members?.find((m: any) => m.user_id === user.id);
+        if (member) {
+          setUserRole(member.role);
+        } else {
+          // Check if user is room creator
+          const roomDetails = await authApi.getRoomDetails(roomId);
+          if (roomDetails.creator_id === user.id) {
+            setUserRole("creator");
+          }
+        }
+      } catch (err) {
+        // If we can't get members, assume regular member
+        setUserRole("member");
+      }
+
+      // Load files
       const response = await authApi.getRoomFiles(roomId, {
         search: searchTerm || undefined,
         category: selectedCategory !== "all" ? selectedCategory as FileCategory : undefined,
@@ -119,6 +144,22 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
     }
   };
 
+  const handleToggleVisibility = async (fileId: number, newVisibility: "private" | "public") => {
+    try {
+      const { authApi } = await import("@/lib/api");
+      await authApi.toggleFileVisibility(roomId, fileId, newVisibility);
+      loadFiles(); // Refresh the list
+    } catch (error) {
+      console.error("Error updating visibility:", error);
+      // alert("Failed to update file visibility. Please try again.");
+    }
+  };
+
+  // Check if user can change visibility of a file
+  const canChangeVisibility = (file: RoomFile) => {
+    return userRole === "admin" || userRole === "creator" || file.user_id === currentUserId;
+  };
+
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -193,13 +234,23 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
         {filteredFiles.map((file) => (
           <div key={file.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-3">
-              {(() => {
-                const IconComponent = getFileIconComponent(file.category);
-                return <IconComponent className="w-8 h-8 text-gray-600" />;
-              })()}
-              {file.is_encrypted && (
-                <LockIcon className="text-green-500 w-4 h-4" title="Encrypted" />
-              )}
+              <div className="flex items-center gap-2">
+                {(() => {
+                  const IconComponent = getFileIconComponent(file.category);
+                  return <IconComponent className="w-8 h-8 text-gray-600" />;
+                })()}
+                {file.visibility === "private" && (
+                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">Private</span>
+                )}
+                {file.visibility === "public" && (
+                  <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">Public</span>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                {file.is_encrypted && (
+                  <LockIcon className="text-green-500 w-4 h-4" title="Encrypted" />
+                )}
+              </div>
             </div>
 
             <div className="mb-3">
@@ -228,6 +279,18 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
               >
                 <DownloadIcon className="w-4 h-4" />
               </Button>
+
+              {/* Visibility Toggle - only show for owners/admins */}
+              {canChangeVisibility(file) && (
+                <Switch
+                  label=""
+                  defaultChecked={file.visibility === "public"}
+                  disabled={false}
+                  onChange={(checked) => handleToggleVisibility(file.id, checked ? "public" : "private")}
+                  color="blue"
+                />
+              )}
+
               <Button
                 size="sm"
                 variant="outline"

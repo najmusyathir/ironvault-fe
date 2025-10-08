@@ -21,6 +21,7 @@ export interface RoomFile {
   storage_path: string;
   public_url?: string;
   is_encrypted: boolean;
+  visibility: string;  // "private" or "public"
   status: string;
   upload_date: string;
   last_accessed?: string;

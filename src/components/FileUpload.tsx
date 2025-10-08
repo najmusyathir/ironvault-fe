@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import Button from "@/components/ui/button/Button";
+import Switch from "@/components/form/switch/Switch";
 import { FileCategory, getFileCategory, formatFileSize, getFileIconComponent } from "@/types/files";
 import {
   FolderIcon,
@@ -21,6 +22,7 @@ export function FileUpload({ roomId, onUploadSuccess }: FileUploadProps) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [description, setDescription] = useState("");
   const [isEncrypted, setIsEncrypted] = useState(false);
+  const [visibility, setVisibility] = useState<"private" | "public">("private");
   const [fileInputKey, setFileInputKey] = useState(Date.now());
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -122,7 +124,7 @@ const uploadFiles = useCallback(async () => {
         // Try to upload - expect 404 since backend isn't ready
         try {
           setUploadProgress(prev => ({ ...prev, [file.name]: 0 }));
-          await authApi.uploadFile(roomId, file, description, isEncrypted);
+          await authApi.uploadFile(roomId, file, description, isEncrypted, visibility);
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
         } catch (error) {
           console.log("Backend not ready, simulating successful upload for demo");
@@ -152,6 +154,7 @@ const uploadFiles = useCallback(async () => {
       setSelectedFiles([]);
       setDescription("");
       setIsEncrypted(false);
+      setVisibility("private");
       setFileInputKey(Date.now()); // Reset file input
 
       // Notify parent component
@@ -166,7 +169,7 @@ const uploadFiles = useCallback(async () => {
     } finally {
       setIsUploading(false);
     }
-  }, [selectedFiles, roomId, description, isEncrypted, onUploadSuccess]);
+  }, [selectedFiles, roomId, description, isEncrypted, visibility, onUploadSuccess]);
 
   const getFileIcon = (file: File) => {
     const category = getFileCategory(file.name);
@@ -269,6 +272,20 @@ const uploadFiles = useCallback(async () => {
             <label htmlFor="encrypt" className="flex items-center gap-1 text-sm">
               <LockIcon className="w-4 h-4" /> Encrypt files for enhanced security
             </label>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Switch
+              label="Public (all members can see)"
+              defaultChecked={visibility === "public"}
+              disabled={isUploading}
+              onChange={(checked) => setVisibility(checked ? "public" : "private")}
+              color="blue"
+            />
+            <LockIcon className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              {visibility === "public" ? "Public" : "Private"}
+            </span>
           </div>
         </div>
       )}
