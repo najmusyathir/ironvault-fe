@@ -198,16 +198,10 @@ export const authApi = {
   },
 
   // Logout user
-  logout: async (): Promise<void> => {
-    try {
-      await api.post('/users/logout', {});
-    } catch (error) {
-      // Even if logout fails on server, clear local storage
-      console.error('Logout error:', error);
-    } finally {
-      removeToken();
-      removeUser();
-    }
+  logout: (): void => {
+    // Simply clear local storage - no API call needed
+    removeToken();
+    removeUser();
   },
 
   // Get current user
