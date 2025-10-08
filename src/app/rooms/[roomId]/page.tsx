@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { authApi, getUser } from "@/lib/api";
+import { checkAuth } from "@/lib/auth";
 import { Room, RoomMember, RoomRole } from "@/types/rooms";
 import { User } from "@/types/auth";
 import Button from "@/components/ui/button/Button";
@@ -72,6 +73,7 @@ export default function RoomViewPage() {
   const [fileRefreshTrigger, setFileRefreshTrigger] = useState(0);
 
   useEffect(() => {
+    checkAuth();
     const user = getUser();
     setCurrentUser(user);
     if (user) {

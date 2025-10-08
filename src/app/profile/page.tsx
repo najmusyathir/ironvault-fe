@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { authApi, getUser, setUser } from "@/lib/api";
+import { checkAuth } from "@/lib/auth";
 import { User } from "@/types/auth";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
@@ -68,6 +69,7 @@ export default function ProfilePage() {
   } = formState;
 
   useEffect(() => {
+    checkAuth();
     const currentUser = getUser();
     if (!currentUser) {
       router.push("/login");

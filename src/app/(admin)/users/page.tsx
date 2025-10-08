@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import Badge from "@/components/ui/badge/Badge";
 import { authApi, getUser } from "@/lib/api";
+import { checkAuth } from "@/lib/auth";
 import { User } from "@/types/auth";
 import { PencilIcon } from "@/icons/index";
 
@@ -50,6 +51,7 @@ export default function UsersPage() {
   const [editError, setEditError] = useState<string | null>(null);
 
   useEffect(() => {
+    checkAuth();
     checkUserRoleAndFetchUsers();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

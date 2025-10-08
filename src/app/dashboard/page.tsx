@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authApi, publicApi, getUser } from "@/lib/api";
+import { checkAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
@@ -38,6 +39,7 @@ export default function Dashboard() {
   const [showRoomDetails, setShowRoomDetails] = useState(false);
 
   useEffect(() => {
+    checkAuth();
     loadDashboard();
   }, []);
 

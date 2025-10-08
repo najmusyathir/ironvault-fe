@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authApi, getUser } from "@/lib/api";
+import { checkAuth } from "@/lib/auth";
 import { Room, CreateRoomRequest } from "@/types/rooms";
 import { User } from "@/types/auth";
 import Button from "@/components/ui/button/Button";
@@ -36,6 +37,7 @@ export default function RoomsPage() {
   const { isLoading, error, searchQuery, rooms, isCreateModalOpen } = formState;
 
   useEffect(() => {
+    checkAuth();
     // Initialize user data on client side only
     const user = getUser();
     setCurrentUser(user);
