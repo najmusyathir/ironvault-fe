@@ -6,6 +6,7 @@ import { Room, RoomMember, RoomRole } from "@/types/rooms";
 import { User } from "@/types/auth";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
+import { Tabs, TabPanel } from "@/components/ui/tabs";
 import {
   UsersIcon,
   LockIcon,
@@ -20,6 +21,8 @@ import {
 import { getInitials } from "@/lib/utils";
 import Link from "next/link";
 import RoomSettingsModal from "@/components/rooms/RoomSettingsModal";
+import { FileUpload } from "@/components/FileUpload";
+import { FileList } from "@/components/FileList";
 
 interface RoomDetails {
   room: Room;
@@ -57,6 +60,10 @@ export default function RoomViewPage() {
   const [copiedCode, setCopiedCode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<"files" | "users">("files");
+  const [fileRefreshTrigger, setFileRefreshTrigger] = useState(0);
 
   useEffect(() => {
     const user = getUser();
@@ -372,142 +379,183 @@ export default function RoomViewPage() {
         </div>
       </div>
 
-      {/* Members Section */}
+      {/* Tabbed Interface */}
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Room Members ({filteredMembers.length})
-              </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                All members with their roles and join dates
-              </p>
-            </div>
-
-            {/* Search and Filter */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative">
-                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Search members..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-full sm:w-64"
-                />
-              </div>
-
-              <select
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-              >
-                <option value="all">All Roles</option>
-                <option value="creator">Creator</option>
-                <option value="admin">Admin</option>
-                <option value="member">Member</option>
-              </select>
-            </div>
-          </div>
+        <div className="border-b border-gray-200 dark:border-gray-700">
+          <nav className="flex space-x-8 px-6" aria-label="Tabs">
+            <button
+              onClick={() => setActiveTab("files")}
+              className={`${
+                activeTab === "files"
+                  ? "border-brand-500 text-brand-600 dark:text-brand-400 dark:border-brand-400"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
+            >
+              📁 Files
+            </button>
+            <button
+              onClick={() => setActiveTab("users")}
+              className={`${
+                activeTab === "users"
+                  ? "border-brand-500 text-brand-600 dark:text-brand-400 dark:border-brand-400"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
+            >
+              👥 Users ({members.length})
+            </button>
+          </nav>
         </div>
 
-        <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {filteredMembers.length === 0 ? (
-            <div className="p-8 text-center">
-              <UsersIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No members found</h3>
-              <p className="text-gray-500 dark:text-gray-400">
-                {searchTerm || roleFilter !== "all"
-                  ? "Try adjusting your search or filters"
-                  : "This room doesn't have any members yet"
-                }
-              </p>
-              {canManage && (
-                <Button
-                  onClick={() => setShowInviteModal(true)}
-                  className="mt-4"
-                >
-                  Invite First Member
-                </Button>
-              )}
+        <div className="p-6">
+          {activeTab === "files" ? (
+            <div className="space-y-6">
+              <FileUpload
+                roomId={room.id}
+                onUploadSuccess={() => setFileRefreshTrigger(prev => prev + 1)}
+              />
+              <FileList
+                roomId={room.id}
+                refreshTrigger={fileRefreshTrigger}
+              />
             </div>
           ) : (
-            filteredMembers.map((member) => (
-              <div key={member.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-sm font-medium text-gray-700">
-                      {member.user ? getInitials(member.user.full_name || member.user.username) : "?"}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <h3 className="font-medium text-gray-900 dark:text-white">
-                          {member.user?.full_name || member.user?.username || "Unknown User"}
-                        </h3>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(member.role)}`}>
-                          {member.role}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        <span>{member.user?.email || "No email"}</span>
-                        <span>•</span>
-                        <span>Joined {formatDate(member.joined_at)}</span>
-                      </div>
-                    </div>
+            <div className="space-y-4">
+              {/* Members Section */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Room Members ({filteredMembers.length})
+                  </h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    All members with their roles and join dates
+                  </p>
+                </div>
+
+                {/* Search and Filter */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative">
+                    <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input
+                      type="text"
+                      placeholder="Search members..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 w-full sm:w-64"
+                    />
                   </div>
 
-                  {canManage && member.user_id !== currentUser?.id && (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={async () => {
-                          const memberName = member.user?.full_name || member.user?.username || 'this user';
-                          if (confirm(`Are you sure you want to remove ${memberName} from the room?`)) {
-                            try {
-                              await authApi.removeMember(room.id, member.user_id);
-                              const user = getUser();
-                              if (user) loadRoomDetails(user); // Refresh the room details
-                            } catch (error: unknown) {
-                              const errorMessage = error instanceof Error ? error.message : 'Failed to remove member';
-                              setError(errorMessage);
-                            }
-                          }
-                        }}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* Show "Leave Room" button for current user */}
-                  {member.user_id === currentUser?.id && member.role !== RoomRole.CREATOR && (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={async () => {
-                          if (confirm('Are you sure you want to leave this room?')) {
-                            try {
-                              await authApi.removeMember(room.id, member.user_id);
-                              router.push('/rooms'); // Redirect to rooms list after leaving
-                            } catch (error: unknown) {
-                              const errorMessage = error instanceof Error ? error.message : 'Failed to leave room';
-                              setError(errorMessage);
-                            }
-                          }
-                        }}
-                        className="text-gray-600 hover:text-gray-700"
-                      >
-                        Leave Room
-                      </Button>
-                    </div>
-                  )}
+                  <select
+                    value={roleFilter}
+                    onChange={(e) => setRoleFilter(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                  >
+                    <option value="all">All Roles</option>
+                    <option value="creator">Creator</option>
+                    <option value="admin">Admin</option>
+                    <option value="member">Member</option>
+                  </select>
                 </div>
               </div>
-            ))
+
+              <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                {filteredMembers.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <UsersIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No members found</h3>
+                    <p className="text-gray-500 dark:text-gray-400">
+                      {searchTerm || roleFilter !== "all"
+                        ? "Try adjusting your search or filters"
+                        : "This room doesn't have any members yet"
+                      }
+                    </p>
+                    {canManage && (
+                      <Button
+                        onClick={() => setShowInviteModal(true)}
+                        className="mt-4"
+                      >
+                        Invite First Member
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  filteredMembers.map((member) => (
+                    <div key={member.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-sm font-medium text-gray-700">
+                            {member.user ? getInitials(member.user.full_name || member.user.username) : "?"}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-3">
+                              <h3 className="font-medium text-gray-900 dark:text-white">
+                                {member.user?.full_name || member.user?.username || "Unknown User"}
+                              </h3>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(member.role)}`}>
+                                {member.role}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
+                              <span>{member.user?.email || "No email"}</span>
+                              <span>•</span>
+                              <span>Joined {formatDate(member.joined_at)}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {canManage && member.user_id !== currentUser?.id && (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={async () => {
+                                const memberName = member.user?.full_name || member.user?.username || 'this user';
+                                if (confirm(`Are you sure you want to remove ${memberName} from the room?`)) {
+                                  try {
+                                    await authApi.removeMember(room.id, member.user_id);
+                                    const user = getUser();
+                                    if (user) loadRoomDetails(user); // Refresh the room details
+                                  } catch (error: unknown) {
+                                    const errorMessage = error instanceof Error ? error.message : 'Failed to remove member';
+                                    setError(errorMessage);
+                                  }
+                                }
+                              }}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        )}
+
+                        {/* Show "Leave Room" button for current user */}
+                        {member.user_id === currentUser?.id && member.role !== RoomRole.CREATOR && (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={async () => {
+                                if (confirm('Are you sure you want to leave this room?')) {
+                                  try {
+                                    await authApi.removeMember(room.id, member.user_id);
+                                    router.push('/rooms'); // Redirect to rooms list after leaving
+                                  } catch (error: unknown) {
+                                    const errorMessage = error instanceof Error ? error.message : 'Failed to leave room';
+                                    setError(errorMessage);
+                                  }
+                                }
+                              }}
+                              className="text-gray-600 hover:text-gray-700"
+                            >
+                              Leave Room
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           )}
         </div>
       </div>

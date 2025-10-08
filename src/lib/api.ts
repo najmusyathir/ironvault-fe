@@ -1,5 +1,16 @@
 import { RegisterRequest, LoginRequest, AuthResponse, ApiError, User } from '@/types/auth';
 import { UpdateRoomRequest } from '@/types/rooms';
+import {
+  RoomFile,
+  FileUploadRequest,
+  FileUploadResponse,
+  FileListResponse,
+  FileSearchFilters,
+  FileDownloadResponse,
+  FileDeleteRequest,
+  FileDeleteResponse,
+  FileStats
+} from '@/types/files';
 
 // API base URL - configurable via environment variable
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
@@ -282,6 +293,54 @@ export const authApi = {
   // Room management functions
   deleteRoom: async (roomId: number) => {
     return api.delete(`/rooms/${roomId}`);
+  },
+
+  // File management functions
+  uploadFile: async (roomId: number, file: File, description?: string, isEncrypted?: boolean): Promise<FileUploadResponse> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (description) formData.append('description', description);
+    if (isEncrypted) formData.append('is_encrypted', isEncrypted.toString());
+
+    const response = await api.post(`/rooms/${roomId}/files`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.file;
+  },
+
+  getRoomFiles: async (roomId: number, filters?: FileSearchFilters): Promise<FileListResponse> => {
+    const params = new URLSearchParams();
+
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params.append(key, value.toString());
+        }
+      });
+    }
+
+    const queryString = params.toString();
+    const endpoint = `/rooms/${roomId}/files${queryString ? `?${queryString}` : ''}`;
+
+    return api.get(endpoint);
+  },
+
+  downloadFile: async (roomId: number, fileId: number): Promise<FileDownloadResponse> => {
+    return api.get(`/rooms/${roomId}/files/${fileId}/download`);
+  },
+
+  deleteFile: async (roomId: number, fileId: number): Promise<{ message: string }> => {
+    return api.delete(`/rooms/${roomId}/files/${fileId}`);
+  },
+
+  bulkDeleteFiles: async (roomId: number, fileIds: number[]): Promise<FileDeleteResponse> => {
+    return api.post(`/rooms/${roomId}/files/bulk-delete`, { file_ids: fileIds });
+  },
+
+  getRoomFileStats: async (roomId: number): Promise<FileStats> => {
+    return api.get(`/rooms/${roomId}/files/stats`);
   },
 };
 
