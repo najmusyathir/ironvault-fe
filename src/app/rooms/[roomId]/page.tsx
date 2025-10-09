@@ -108,7 +108,7 @@ export default function RoomViewPage() {
           is_active: boolean;
         }>;
       };
-      const roomData = response.room || response;
+      const roomData = response.room || response as Room;
       const members = response.members || [];
       const inviteCodes = response.invite_codes || [];
 

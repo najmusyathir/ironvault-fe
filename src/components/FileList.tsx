@@ -42,13 +42,13 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
 
       // Get user's role in this room
       try {
-        const membersResponse = await authApi.getRoomMembers(roomId);
+        const membersResponse = await authApi.getRoomMembers(roomId) as any;
         const member = membersResponse.members?.find((m: any) => m.user_id === user.id);
         if (member) {
           setUserRole(member.role);
         } else {
           // Check if user is room creator
-          const roomDetails = await authApi.getRoomDetails(roomId);
+          const roomDetails = await authApi.getRoomDetails(roomId) as any;
           if (roomDetails.creator_id === user.id) {
             setUserRole("creator");
           }

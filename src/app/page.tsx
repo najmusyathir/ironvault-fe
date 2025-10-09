@@ -27,7 +27,7 @@ export default function Home() {
 
   return (
     <>
-      <PageBreadCrumb title="Home" />
+      <PageBreadCrumb pageTitle="Home" />
       <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
         <GridShape />
 

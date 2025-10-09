@@ -140,12 +140,12 @@ export default function RoomSettingsModal({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Room Name *
               </label>
-              <Input
+              <input
                 type="text"
                 value={formData.name || ""}
                 onChange={(e) => handleInputChange("name", e.target.value)}
                 placeholder="Enter room name"
-                className="w-full"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 disabled={isSaving}
                 maxLength={100}
               />
@@ -180,8 +180,7 @@ export default function RoomSettingsModal({
               </label>
               <div className="flex gap-4">
                 <button
-                  type="button"
-                  onClick={() => handleInputChange("is_private", false)}
+                                    onClick={() => handleInputChange("is_private", false)}
                   className={`flex-1 p-4 border rounded-lg text-center transition-colors ${
                     formData.is_private === false
                       ? "border-brand-500 bg-brand-50 dark:bg-brand-900/20"
@@ -197,8 +196,7 @@ export default function RoomSettingsModal({
                 </button>
 
                 <button
-                  type="button"
-                  onClick={() => handleInputChange("is_private", true)}
+                                    onClick={() => handleInputChange("is_private", true)}
                   className={`flex-1 p-4 border rounded-lg text-center transition-colors ${
                     formData.is_private === true
                       ? "border-brand-500 bg-brand-50 dark:bg-brand-900/20"
@@ -220,13 +218,13 @@ export default function RoomSettingsModal({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Maximum Members
               </label>
-              <Input
+              <input
                 type="number"
                 value={formData.max_members?.toString() || ""}
                 onChange={(e) => handleInputChange("max_members", parseInt(e.target.value) || 1)}
                 min="1"
                 max="1000"
-                className="w-full"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 disabled={isSaving}
               />
               <p className="text-xs text-gray-500 mt-1">
@@ -244,8 +242,7 @@ export default function RoomSettingsModal({
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
               <button
-                type="button"
-                onClick={() => {
+                                onClick={() => {
                   console.log("Delete button clicked");
                   setShowDeleteConfirm(true);
                 }}
@@ -258,16 +255,14 @@ export default function RoomSettingsModal({
 
               <div className="flex gap-3 sm:order-1 sm:mr-auto">
                 <Button
-                  type="button"
-                  onClick={onClose}
+                                    onClick={onClose}
                   variant="outline"
                   disabled={isSaving || isDeleting}
                 >
                   Cancel
                 </Button>
                 <Button
-                  type="submit"
-                  disabled={isSaving || isDeleting}
+                                    disabled={isSaving || isDeleting}
                 >
                   {isSaving ? "Saving..." : "Save Changes"}
                 </Button>

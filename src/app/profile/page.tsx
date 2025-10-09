@@ -19,6 +19,8 @@ interface ProfileFormData {
   nric: string;
   birth_date: string;
   role: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 
 interface ProfileFormState {
@@ -29,8 +31,6 @@ interface ProfileFormState {
   formErrors: Partial<Record<keyof ProfileFormData, string>>;
   isEditing: boolean;
   showPassword: boolean;
-  newPassword: string;
-  confirmPassword: string;
 }
 
 export default function ProfilePage() {
@@ -48,12 +48,12 @@ export default function ProfilePage() {
       nric: "",
       birth_date: "",
       role: "",
+      newPassword: "",
+      confirmPassword: "",
     },
     formErrors: {},
     isEditing: false,
     showPassword: false,
-    newPassword: "",
-    confirmPassword: "",
   });
 
   const {
@@ -64,8 +64,6 @@ export default function ProfilePage() {
     formErrors,
     isEditing,
     showPassword,
-    newPassword,
-    confirmPassword,
   } = formState;
 
   useEffect(() => {
@@ -88,6 +86,8 @@ export default function ProfilePage() {
         nric: currentUser.nric || "",
         birth_date: currentUser.birth_date ? new Date(currentUser.birth_date).toISOString().split('T')[0] : "",
         role: currentUser.role || "",
+        newPassword: "",
+        confirmPassword: "",
       },
     }));
   }, [router]);
@@ -124,11 +124,11 @@ export default function ProfilePage() {
     }
 
     // Password validation if changing password
-    if (newPassword && newPassword !== confirmPassword) {
+    if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
       errors.confirmPassword = "Passwords do not match";
     }
 
-    if (newPassword && newPassword.length < 3) {
+    if (formData.newPassword && formData.newPassword.length < 3) {
       errors.newPassword = "Password must be at least 3 characters long";
     }
 
@@ -154,19 +154,19 @@ export default function ProfilePage() {
 
     try {
       // Prepare update data (only include fields that can be updated)
-      const updateData: Partial<User> = {
+      const updateData: Partial<User> & { password?: string } = {
         username: formData.username,
         email: formData.email,
         full_name: formData.full_name,
-        phone: formData.phone || null,
-        nickname: formData.nickname || null,
-        nric: formData.nric || null,
-        birth_date: formData.birth_date || null,
+        phone: formData.phone || undefined,
+        nickname: formData.nickname || undefined,
+        nric: formData.nric || undefined,
+        birth_date: formData.birth_date || undefined,
       };
 
       // Add password if provided
-      if (newPassword) {
-        updateData.password = newPassword;
+      if (formData.newPassword) {
+        updateData.password = formData.newPassword;
       }
 
       // Call API to update user (you'll need to add this endpoint)
@@ -180,8 +180,11 @@ export default function ProfilePage() {
         isLoading: false,
         success: "Profile updated successfully!",
         isEditing: false,
-        newPassword: "",
-        confirmPassword: "",
+        formData: {
+          ...prev.formData,
+          newPassword: "",
+          confirmPassword: "",
+        },
       }));
 
     } catch (err: unknown) {
@@ -209,10 +212,10 @@ export default function ProfilePage() {
           nric: currentUser.nric || "",
           birth_date: currentUser.birth_date ? new Date(currentUser.birth_date).toISOString().split('T')[0] : "",
           role: currentUser.role || "",
+          newPassword: "",
+          confirmPassword: "",
         },
         formErrors: {},
-        newPassword: "",
-        confirmPassword: "",
       }));
     }
   };
@@ -262,7 +265,6 @@ export default function ProfilePage() {
                 JPG, GIF or PNG. 1MB max.
               </p>
               <Button
-                type="button"
                 variant="outline"
                 className="mt-2"
                 disabled
@@ -280,7 +282,6 @@ export default function ProfilePage() {
               </h3>
               {!isEditing ? (
                 <Button
-                  type="button"
                   onClick={() => setFormState(prev => ({ ...prev, isEditing: true }))}
                 >
                   Edit
@@ -288,7 +289,6 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-x-2">
                   <Button
-                    type="button"
                     variant="outline"
                     onClick={handleCancel}
                     disabled={isLoading}
@@ -296,7 +296,6 @@ export default function ProfilePage() {
                     Cancel
                   </Button>
                   <Button
-                    type="button"
                     onClick={handleSave}
                     disabled={isLoading}
                   >
@@ -447,8 +446,8 @@ export default function ProfilePage() {
                     <Label>New Password (Optional)</Label>
                     <Input
                       type={showPassword ? "text" : "password"}
-                      value={newPassword}
-                      onChange={(e) => setFormState(prev => ({ ...prev, newPassword: e.target.value }))}
+                      value={formData.newPassword}
+                      onChange={(e) => setFormState(prev => ({ ...prev, formData: { ...prev.formData, newPassword: e.target.value } }))}
                       className={formErrors.newPassword ? "border-red-500" : ""}
                     />
                     {formErrors.newPassword && (
@@ -460,8 +459,8 @@ export default function ProfilePage() {
                     <Label>Confirm New Password</Label>
                     <Input
                       type={showPassword ? "text" : "password"}
-                      value={confirmPassword}
-                      onChange={(e) => setFormState(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormState(prev => ({ ...prev, formData: { ...prev.formData, confirmPassword: e.target.value } }))}
                       className={formErrors.confirmPassword ? "border-red-500" : ""}
                     />
                     {formErrors.confirmPassword && (
@@ -472,7 +471,6 @@ export default function ProfilePage() {
 
                 <div className="mt-3">
                   <button
-                    type="button"
                     onClick={() => setFormState(prev => ({ ...prev, showPassword: !showPassword }))}
                     className="flex items-center text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
                   >

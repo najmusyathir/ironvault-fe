@@ -90,9 +90,9 @@ export default function Dashboard() {
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case "superadmin": return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
-      case "admin": return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400";
-      default: return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+      case "superadmin": return "error";
+      case "admin": return "primary";
+      default: return "info";
     }
   };
 
@@ -114,7 +114,7 @@ export default function Dashboard() {
         {/* Breadcrumb */}
         <div className="sticky top-0 z-50 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <div className="px-4 sm:px-6 lg:px-8 py-4">
-            <PageBreadCrumb />
+            <PageBreadCrumb pageTitle="Dashboard" />
           </div>
         </div>
 
@@ -134,7 +134,7 @@ export default function Dashboard() {
             </div>
             <div className="mt-4 sm:mt-0 flex gap-3">
               {user && (
-                <Badge className={getRoleBadgeColor(user.role || "user")}>
+                <Badge color={getRoleBadgeColor(user.role || "user")}>
                   {user.role?.toUpperCase() || "USER"}
                 </Badge>
               )}
@@ -225,7 +225,7 @@ export default function Dashboard() {
                       {room.name}
                     </h3>
                     {room.is_private && (
-                      <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                      <Badge color="warning">
                         Private
                       </Badge>
                     )}
@@ -373,7 +373,6 @@ function CreateRoomModal({ onClose, onCreate }: { onClose: () => void; onCreate:
 
           <div className="flex gap-3 pt-4">
             <Button
-              type="button"
               onClick={onClose}
               variant="outline"
               className="flex-1"
@@ -381,7 +380,6 @@ function CreateRoomModal({ onClose, onCreate }: { onClose: () => void; onCreate:
               Cancel
             </Button>
             <Button
-              type="submit"
               disabled={loading}
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
             >

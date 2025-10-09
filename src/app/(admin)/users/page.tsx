@@ -153,7 +153,7 @@ export default function UsersPage() {
       setEditError(null);
 
       // Make real API call to update user
-      const response = await authApi.updateUser(editingUser.id, updatedData);
+      const response = await authApi.updateUser(editingUser.id, updatedData) as any;
 
       // Update the user in the local state with the response data
       const updatedUsers = users.map(user =>

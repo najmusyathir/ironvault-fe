@@ -123,7 +123,7 @@ export default function CreateRoomModal({ onClose, onSubmit, isLoading }: Create
 
           {/* Privacy */}
           <div>
-            <Label className="flex items-center cursor-pointer">
+            <label className="flex items-center cursor-pointer">
               <input
                 type="checkbox"
                 checked={formData.is_private}
@@ -133,7 +133,7 @@ export default function CreateRoomModal({ onClose, onSubmit, isLoading }: Create
               <span className="text-sm text-gray-700 dark:text-gray-300">
                 Make this room private
               </span>
-            </Label>
+            </label>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Private rooms require an invite code to join
             </p>
@@ -144,14 +144,14 @@ export default function CreateRoomModal({ onClose, onSubmit, isLoading }: Create
             <Label htmlFor="max_members">
               Maximum Members <span className="text-red-500">*</span>
             </Label>
-            <Input
+            <input
               id="max_members"
               type="number"
               min="1"
               max="1000"
               value={formData.max_members.toString()}
               onChange={(e) => handleInputChange("max_members", parseInt(e.target.value) || 1)}
-              className={formErrors.max_members ? "border-red-500" : ""}
+              className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${formErrors.max_members ? "border-red-500" : ""}`}
             />
             {formErrors.max_members && (
               <p className="mt-1 text-sm text-red-500">{formErrors.max_members}</p>
