@@ -152,17 +152,31 @@ export default function ProfilePage() {
       success: null,
     }));
 
+
     try {
-      // Prepare update data (only include fields that can be updated)
+      // Prepare update data (only include fields that have values)
       const updateData: Partial<User> & { password?: string } = {
         username: formData.username,
         email: formData.email,
         full_name: formData.full_name,
-        phone: formData.phone || undefined,
-        nickname: formData.nickname || undefined,
-        nric: formData.nric || undefined,
-        birth_date: formData.birth_date || undefined,
       };
+
+      // Only include optional fields if they have values
+      if (formData.phone) {
+        updateData.phone = formData.phone;
+      }
+
+      if (formData.nickname) {
+        updateData.nickname = formData.nickname;
+      }
+
+      if (formData.nric) {
+        updateData.nric = formData.nric;
+      }
+
+      if (formData.birth_date) {
+        updateData.birth_date = formData.birth_date;
+      }
 
       // Add password if provided
       if (formData.newPassword) {
@@ -170,18 +184,25 @@ export default function ProfilePage() {
       }
 
       // Call API to update user (you'll need to add this endpoint)
-      const updatedUser = await authApi.updateProfile(updateData);
+      const response = await authApi.updateProfile(updateData);
 
-      // Update local storage
-      setUser(updatedUser);
-
+      // setUser is now called automatically in the API function
+      // Reload the updated user data into the form
+      const updatedUser = response.user;
       setFormState(prev => ({
         ...prev,
         isLoading: false,
         success: "Profile updated successfully!",
         isEditing: false,
         formData: {
-          ...prev.formData,
+          username: updatedUser.username || "",
+          email: updatedUser.email || "",
+          full_name: updatedUser.full_name || "",
+          phone: updatedUser.phone || "",
+          nickname: updatedUser.nickname || "",
+          nric: updatedUser.nric || "",
+          birth_date: updatedUser.birth_date ? new Date(updatedUser.birth_date).toISOString().split('T')[0] : "",
+          role: updatedUser.role || "",
           newPassword: "",
           confirmPassword: "",
         },
@@ -249,11 +270,11 @@ export default function ProfilePage() {
               <div className="w-20 h-20 bg-brand-500 rounded-full flex items-center justify-center text-white font-semibold text-xl">
                 {formData.full_name
                   ? formData.full_name
-                      .split(" ")
-                      .map((word) => word.charAt(0))
-                      .join("")
-                      .toUpperCase()
-                      .slice(0, 2)
+                    .split(" ")
+                    .map((word) => word.charAt(0))
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2)
                   : formData.username.charAt(0).toUpperCase()}
               </div>
             </div>
@@ -340,15 +361,14 @@ export default function ProfilePage() {
                     type="text"
                     value={formData.role}
                     disabled={true}  // Always disabled - role is read-only
-                    onChange={() => {}}  // Dummy handler to prevent warning
+                    onChange={() => { }}  // Dummy handler to prevent warning
                     className="bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 pr-12"
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-                      formData.role === 'superadmin' ? 'text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-900/20' :
-                      formData.role === 'admin' ? 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900/20' :
-                      'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/20'
-                    }`}>
+                    <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${formData.role === 'superadmin' ? 'text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-900/20' :
+                        formData.role === 'admin' ? 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900/20' :
+                          'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/20'
+                      }`}>
                       {formData.role}
                     </span>
                   </div>

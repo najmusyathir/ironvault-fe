@@ -12,7 +12,15 @@ export default function Home() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    // Check if user is authenticated (optional)
+    // Check if user is authenticated and redirect to dashboard if logged in
+    const token = localStorage.getItem('auth_token');
+    const user = localStorage.getItem('user');
+    if (token && user) {
+      router.push('/dashboard');
+      return;
+    }
+
+    // If not authenticated, set user state for the page
     const currentUser = getUser();
     setUser(currentUser);
   }, []);
@@ -27,7 +35,7 @@ export default function Home() {
 
   return (
     <>
-      <PageBreadCrumb pageTitle="Home" />
+      {/* <PageBreadCrumb pageTitle="Home" /> */}
       <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
         <GridShape />
 

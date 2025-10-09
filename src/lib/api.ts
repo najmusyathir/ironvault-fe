@@ -210,9 +210,9 @@ export const authApi = {
   },
 
   // Update profile
-  updateProfile: async (data: Partial<User>): Promise<User> => {
-    const response = await api.put<User>('/users/me', data);
-    setUser(response);
+  updateProfile: async (data: Partial<User>): Promise<any> => {
+    const response = await api.put<any>('/users/me', data);
+    setUser(response.user);
     return response;
   },
 
