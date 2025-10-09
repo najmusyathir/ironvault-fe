@@ -2,6 +2,7 @@
 # Node package
 /node_modules
 /.next
+.env
 
 # Assets
 /public/images
