@@ -249,7 +249,7 @@ export default function RoomSettingsModal({
                 disabled={isSaving || isDeleting}
                 className="px-4 py-3 text-red-600 hover:text-red-700 border border-red-300 hover:border-red-400 dark:text-red-400 dark:hover:text-red-300 dark:border-red-700 dark:hover:border-red-600 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:order-3 flex items-center"
               >
-                <TrashIcon className="w-4 h-4 mr-2" />
+                <TrashIcon className="w-6 h-6 mr-2" />
                 Delete Room
               </button>
 

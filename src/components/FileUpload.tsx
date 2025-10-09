@@ -192,7 +192,7 @@ const uploadFiles = useCallback(async () => {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        <FolderIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <FolderIcon className="w-6 h-6 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-medium mb-2">
           Upload Files to Iron Vault
         </h3>
@@ -237,7 +237,7 @@ const uploadFiles = useCallback(async () => {
                   disabled={isUploading}
                   className="text-red-500 hover:text-red-700"
                 >
-                  <XIcon className="w-4 h-4" />
+                  <XIcon className="w-6 h-6" />
                 </button>
               </div>
             ))}
@@ -270,7 +270,7 @@ const uploadFiles = useCallback(async () => {
               className="rounded border-gray-300"
             />
             <label htmlFor="encrypt" className="flex items-center gap-1 text-sm">
-              <LockIcon className="w-4 h-4" /> Encrypt files for enhanced security
+              <LockIcon className="w-6 h-6" /> Encrypt files for enhanced security
             </label>
           </div>
 
@@ -282,7 +282,7 @@ const uploadFiles = useCallback(async () => {
               onChange={(checked) => setVisibility(checked ? "public" : "private")}
               color="blue"
             />
-            <LockIcon className="w-4 h-4 text-gray-500" />
+            <LockIcon className="w-6 h-6 text-gray-500" />
             <span className="text-sm text-gray-600 dark:text-gray-400">
               {visibility === "public" ? "Public" : "Private"}
             </span>

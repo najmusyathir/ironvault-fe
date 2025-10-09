@@ -359,7 +359,7 @@ export default function RoomViewPage() {
                 variant="outline"
                 className="flex items-center gap-2"
               >
-                <PlusIcon className="w-4 h-4" />
+                <PlusIcon className="w-6 h-6" />
                 Create Invite Code
               </Button>
               {isCreator && (
@@ -368,7 +368,7 @@ export default function RoomViewPage() {
                   variant="outline"
                   className="flex items-center gap-2"
                 >
-                  <SettingsIcon className="w-4 h-4" />
+                  <SettingsIcon className="w-6 h-6" />
                   Settings
                 </Button>
               )}
@@ -440,7 +440,7 @@ export default function RoomViewPage() {
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
             >
-              <FolderIcon className="w-4 h-4 inline mr-1" />
+              <FolderIcon className="w-6 h-6 inline mr-1" />
               Files
             </button>
             <button
@@ -483,7 +483,7 @@ export default function RoomViewPage() {
                 {/* Search and Filter */}
                 <div className="flex flex-col sm:flex-row gap-3">
                   <div className="relative">
-                    <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400" />
                     <Input
                       type="text"
                       placeholder="Search members..."
@@ -652,7 +652,7 @@ export default function RoomViewPage() {
                 }}
                 className="flex items-center gap-2"
               >
-                <PlusIcon className="w-4 h-4" />
+                <PlusIcon className="w-6 h-6" />
                 Create New Code
               </Button>
             </div>

@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Room, RoomRole } from "@/types/rooms";
+import { User } from "@/types/auth";
 import Button from "@/components/ui/button/Button";
-import { UsersIcon, LockIcon, UnlockIcon, UserIcon, CalendarIcon } from "@/icons";
+import { UsersIcon, LockIcon, UnlockIcon, UserIcon, CalendarIcon, EyeIcon } from "@/icons";
 import { getInitials } from "@/lib/utils";
+import { getUser } from "@/lib/api";
 
 interface RoomCardProps {
   room: Room;
@@ -14,6 +16,12 @@ export default function RoomCard({ room, onJoin, onView }: RoomCardProps) {
   const [isJoining, setIsJoining] = useState(false);
   const [showJoinInput, setShowJoinInput] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const user = getUser();
+    setCurrentUser(user);
+  }, []);
 
   const handleJoin = async () => {
     if (!room.is_member) {
@@ -75,9 +83,9 @@ export default function RoomCard({ room, onJoin, onView }: RoomCardProps) {
                 {room.name}
               </h3>
               {room.is_private ? (
-                <LockIcon className="w-4 h-4 text-gray-500" title="Private room" />
+                <LockIcon className="w-5 h-5 text-gray-500" title="Private room" />
               ) : (
-                <UnlockIcon className="w-4 h-4 text-gray-500" title="Public room" />
+                <UnlockIcon className="w-5 h-5 text-gray-500" title="Public room" />
               )}
             </div>
 
@@ -107,11 +115,11 @@ export default function RoomCard({ room, onJoin, onView }: RoomCardProps) {
         {/* Stats */}
         <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
           <div className="flex items-center gap-1">
-            <UsersIcon className="w-4 h-4" />
+            <UsersIcon className="w-6 h-6" />
             <span>{room.current_members}/{room.max_members}</span>
           </div>
           <div className="flex items-center gap-1">
-            <CalendarIcon className="w-4 h-4" />
+            <CalendarIcon className="w-6 h-6" />
             <span>{formatDate(room.created_at)}</span>
           </div>
         </div>
@@ -160,26 +168,51 @@ export default function RoomCard({ room, onJoin, onView }: RoomCardProps) {
       {/* Footer */}
       <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2">
-          {room.is_member ? (
-            <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getRoleColor(room.user_role)}`}>
+          {currentUser?.role === "superadmin" ? (
+            // Superadmin badge
+            <span className="inline-flex items-center px-4 py-2 text-xs font-medium text-purple-600 bg-purple-100 rounded-full dark:text-purple-400 dark:bg-purple-900/20">
+              Superadmin Access
+            </span>
+          ) : room.is_member ? (
+            // Regular member badge
+            <span className={`inline-flex items-center px-4 py-2 text-xs font-medium rounded-full ${getRoleColor(room.user_role)}`}>
               {room.user_role}
             </span>
           ) : (
-            <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded-full dark:text-gray-400 dark:bg-gray-700">
+            // Non-member badge
+            <span className="inline-flex items-center px-4 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-full dark:text-gray-400 dark:bg-gray-700">
               Not a member
             </span>
           )}
         </div>
 
-        <Button
-          onClick={handleJoin}
-          variant={room.is_member ? "outline" : "primary"}
-          size="sm"
-          disabled={room.current_members >= room.max_members}
-        >
-          {room.is_member ? "View Room" :
-           room.current_members >= room.max_members ? "Full" : "Join Room"}
-        </Button>
+        <div className="flex items-center gap-2">
+          {currentUser?.role === "superadmin" ? (
+            // Superadmin always gets "Enter Room" button
+            <div title="Enter as Superadmin">
+              <Button
+                onClick={() => onView(room.id)}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1"
+              >
+                <EyeIcon className="w-4 h-4" />
+                Enter Room
+              </Button>
+            </div>
+          ) : (
+            // Regular users get join/view button
+            <Button
+              onClick={handleJoin}
+              variant={room.is_member ? "outline" : "primary"}
+              size="sm"
+              disabled={room.current_members >= room.max_members}
+            >
+              {room.is_member ? "View Room" :
+               room.current_members >= room.max_members ? "Full" : "Join Room"}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

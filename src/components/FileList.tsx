@@ -250,7 +250,7 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
               </div>
               <div className="flex items-center gap-1">
                 {file.is_encrypted && (
-                  <LockIcon className="text-green-500 w-4 h-4" title="Encrypted" />
+                  <LockIcon className="text-green-500 w-6 h-6" title="Encrypted" />
                 )}
               </div>
             </div>
@@ -272,16 +272,10 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
               )}
             </div>
 
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleDownload(file)}
-                className="flex-1"
-              >
-                <DownloadIcon className="w-4 h-4" />
-              </Button>
-
+            <div className="py-2 flex gap-3">
+              <span>
+                Visibility:
+              </span>
               {/* Visibility Toggle - only show for owners/admins */}
               {canChangeVisibility(file) && (
                 <Switch
@@ -292,6 +286,17 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
                   color="blue"
                 />
               )}
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleDownload(file)}
+                className="flex-1"
+              >
+                <DownloadIcon className="w-6 h-6" />
+              </Button>
 
               <Button
                 size="sm"
@@ -299,7 +304,7 @@ export function FileList({ roomId, refreshTrigger }: FileListProps) {
                 onClick={() => handleDelete(file.id)}
                 className="text-red-600 hover:text-red-700"
               >
-                <TrashIcon className="w-4 h-4" />
+                <TrashIcon className="w-6 h-6" />
               </Button>
             </div>
           </div>

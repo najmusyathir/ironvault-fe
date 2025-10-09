@@ -174,7 +174,7 @@ export default function RoomsPage() {
               onClick={() => setFormState(prev => ({ ...prev, isCreateModalOpen: true }))}
               className="flex items-center gap-2"
             >
-              <PlusIcon className="w-4 h-4" />
+              <PlusIcon className="w-5 h-5" />
               Create Room
             </Button>
           </div>

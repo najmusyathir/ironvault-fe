@@ -494,7 +494,7 @@ export default function ProfilePage() {
                     onClick={() => setFormState(prev => ({ ...prev, showPassword: !showPassword }))}
                     className="flex items-center text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
                   >
-                    {showPassword ? <EyeCloseIcon className="w-4 h-4 mr-1" /> : <EyeIcon className="w-4 h-4 mr-1" />}
+                    {showPassword ? <EyeCloseIcon className="w-6 h-6 mr-1" /> : <EyeIcon className="w-6 h-6 mr-1" />}
                     {showPassword ? "Hide Password" : "Show Password"}
                   </button>
                 </div>
