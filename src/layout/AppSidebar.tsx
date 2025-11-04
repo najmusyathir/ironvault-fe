@@ -66,7 +66,7 @@ const AppSidebar: React.FC = () => {
 
   const renderMenuItems = (
     navItems: NavItem[],
-    menuType: "main" 
+    menuType: "main"
   ) => (
     <ul className="flex flex-col gap-4">
       {navItems.map((nav, index) => (
@@ -241,24 +241,26 @@ const AppSidebar: React.FC = () => {
           {isExpanded || isHovered || isMobileOpen ? (
             <div className="flex flex-col items-center max-w-xs">
               <div className="bg-white rounded-2xl p-3 flex gap-3 items-center duration-200 hover:scale-105">
-                <Image
-                  width={32}
-                  height={32}
-                  src="./images/logo/auth-logo.svg"
+                <img
+                  width={48}
+                  height={48}
+                  src={require("@/icons/logo.jpg").default.src}
                   alt="Logo"
                 />
+
                 <span className="text-xl font-bold">
                   Iron Vault
                 </span>
               </div>
             </div>
           ) : (
-            <Image
-              src="/images/logo/logo-icon.svg"
+            <img
+              width={48}
+              height={48}
+              src={require("@/icons/logo.jpg").default.src}
               alt="Logo"
-              width={32}
-              height={32}
             />
+
           )}
         </Link>
       </div>

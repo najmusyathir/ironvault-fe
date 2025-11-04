@@ -23,12 +23,13 @@ export default function AuthLayout({
               <div className="flex flex-col items-center max-w-xs">
                 <Link href="/" className="block mb-4">
                   <div className="bg-white rounded-2xl p-3 flex gap-3 items-center duration-200 hover:scale-105">
-                    <Image
+                    <img
                       width={48}
                       height={48}
-                      src="./images/logo/auth-logo.svg"
+                      src={require("@/icons/logo.jpg").default.src}
                       alt="Logo"
                     />
+
                     <span className="text-3xl font-bold">
                       Iron Vault
                     </span>
