@@ -180,12 +180,11 @@ export default function RoomSettingsModal({
               </label>
               <div className="flex gap-4">
                 <button
-                                    onClick={() => handleInputChange("is_private", false)}
-                  className={`flex-1 p-4 border rounded-lg text-center transition-colors ${
-                    formData.is_private === false
-                      ? "border-brand-500 bg-brand-50 dark:bg-brand-900/20"
-                      : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
-                  }`}
+                  onClick={() => handleInputChange("is_private", false)}
+                  className={`flex-1 p-4 border rounded-lg text-center transition-colors ${formData.is_private === false
+                    ? "border-brand-500 bg-brand-50 dark:bg-brand-900/20"
+                    : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
+                    }`}
                   disabled={isSaving}
                 >
                   <UnlockIcon className="w-6 h-6 mx-auto mb-2 text-gray-600 dark:text-gray-400" />
@@ -196,12 +195,11 @@ export default function RoomSettingsModal({
                 </button>
 
                 <button
-                                    onClick={() => handleInputChange("is_private", true)}
-                  className={`flex-1 p-4 border rounded-lg text-center transition-colors ${
-                    formData.is_private === true
-                      ? "border-brand-500 bg-brand-50 dark:bg-brand-900/20"
-                      : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
-                  }`}
+                  onClick={() => handleInputChange("is_private", true)}
+                  className={`flex-1 p-4 border rounded-lg text-center transition-colors ${formData.is_private === true
+                    ? "border-brand-500 bg-brand-50 dark:bg-brand-900/20"
+                    : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
+                    }`}
                   disabled={isSaving}
                 >
                   <LockIcon className="w-6 h-6 mx-auto mb-2 text-gray-600 dark:text-gray-400" />
@@ -242,7 +240,8 @@ export default function RoomSettingsModal({
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
               <button
-                                onClick={() => {
+                type="button"
+                onClick={() => {
                   console.log("Delete button clicked");
                   setShowDeleteConfirm(true);
                 }}
@@ -255,14 +254,14 @@ export default function RoomSettingsModal({
 
               <div className="flex gap-3 sm:order-1 sm:mr-auto">
                 <Button
-                                    onClick={onClose}
+                  onClick={onClose}
                   variant="outline"
                   disabled={isSaving || isDeleting}
                 >
                   Cancel
                 </Button>
                 <Button
-                                    disabled={isSaving || isDeleting}
+                  disabled={isSaving || isDeleting}
                 >
                   {isSaving ? "Saving..." : "Save Changes"}
                 </Button>
